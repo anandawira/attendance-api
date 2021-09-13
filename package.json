@@ -1,10 +1,14 @@
 {
   "name": "attendance",
   "version": "1.0.0",
+  "engines": {
+    "node": "16.x.x"
+  },
   "description": "This is our second project in the Glint's Industry Project Exploration Program. We are building an attendance system for employee with geo location verification feature. Employee can mark their attendance time ONLY IF they are inside 100 meters radius from the office.",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node index.js",
+    "startDev": "nodemon index.js"
   },
   "keywords": [],
   "author": "",
