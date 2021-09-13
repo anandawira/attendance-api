@@ -22,12 +22,10 @@ app.use(
     ':method :url :status :res[content-length] - :response-time[0] ms :user-agent',
   ),
 );
-app.use(cors());
 app.use(express.urlencoded({ extended: false }));
 app.use(compression());
-app.use(helmet({
-  contentSecurityPolicy: false,
-}));
+app.use(helmet());
+app.use(cors());
 
 // Routes
 app.get('/', (req, res)=>{
