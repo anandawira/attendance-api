@@ -25,7 +25,9 @@ app.use(
 app.use(cors());
 app.use(express.urlencoded({ extended: false }));
 app.use(compression());
-app.use(helmet());
+app.use(helmet({
+  contentSecurityPolicy: false,
+}));
 
 // Routes
 app.get('/', (req, res)=>{
