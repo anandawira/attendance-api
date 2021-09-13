@@ -12,7 +12,6 @@ const UserSchema = new Schema({
   },
   password: { type: String, required: true },
   isAdmin: { type: Boolean, default: false },
-  attendances: [{ type: Schema.Types.ObjectId, ref: 'Attendance' }],
 }, {timestamps: true});
 
 UserSchema.statics.findByIdAndChangePassword = async function (id, hashedPassword){
