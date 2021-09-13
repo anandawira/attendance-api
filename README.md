@@ -6,6 +6,7 @@ This is our second project in the Glint's Industry Project Exploration Program. 
 
 - [Features](#features)
 - [Tech Stacks](#tech-stacks)
+- [Environment Variables](#environment-variables)
 - [Deployment](#deployment)
 - [Authors](#authors)
 
@@ -20,6 +21,23 @@ This is our second project in the Glint's Industry Project Exploration Program. 
 - [Express.js](https://expressjs.com/)
 - [MongoDB](https://www.mongodb.com/)
 - [Redis](https://redis.io/)
+
+## Environment Variables
+
+Please set up all environment variables below before starting the server.
+
+- MONGO_DB
+  > Your mongodb connection url.
+- REFRESH_TOKEN_SECRET
+  > Secret string for signing and verifying refresh token.
+- ACCESS_TOKEN_SECRET
+  > Secret string for signing and verifying access token.
+- FORGET_PASSWORD_SECRET
+  > Secret string for signing and verifying forget password token.
+- GMAIL_USERNAME
+  > Your Gmail full address. Ex: **email\@example.com** . Please make sure you have enabled "less secure" on account setting. See [this page](https://nodemailer.com/usage/using-gmail/) for more information.
+- GMAIL_PASSWORD
+  > Your Gmail password.
 
 ## Deployment
 
