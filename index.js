@@ -27,6 +27,11 @@ app.use(express.urlencoded({ extended: false }));
 app.use(compression());
 app.use(helmet());
 
+// Routes
+app.get('/', (req, res)=>{
+  return res.send('This page is for API Documentation')
+})
+
 // Get port from environment variable or use 3000 on development
 const port = process.env.PORT || 3000;
 
