@@ -25,7 +25,8 @@ app.use(
 app.use(express.urlencoded({ extended: false }));
 app.use(compression());
 app.use(helmet({
-  frameguard: false
+  frameguard: false,
+  contentSecurityPolicy: false
 }));
 app.use(cors());
 
