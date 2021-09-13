@@ -24,10 +24,7 @@ app.use(
 );
 app.use(express.urlencoded({ extended: false }));
 app.use(compression());
-app.use(helmet({
-  frameguard: false,
-  contentSecurityPolicy: false
-}));
+app.use(helmet());
 app.use(cors());
 
 // Routes
