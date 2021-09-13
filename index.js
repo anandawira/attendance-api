@@ -8,6 +8,7 @@ const express = require('express');
 const morgan = require('morgan');
 const cors = require('cors');
 const compression = require('compression');
+const helmet = require("helmet");
 
 // Initializing mongoDB
 require('./configs/database')
@@ -24,6 +25,7 @@ app.use(
 app.use(cors());
 app.use(express.urlencoded({ extended: false }));
 app.use(compression());
+app.use(helmet());
 
 // Get port from environment variable or use 3000 on development
 const port = process.env.PORT || 3000;
