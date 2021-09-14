@@ -92,9 +92,9 @@ exports.login = [
         message: 'User authentication success',
         data: {
           id: _id,
-          first_name: first_name,
-          last_name: last_name,
-          isAdmin: isAdmin,
+          first_name,
+          last_name,
+          isAdmin,
           access_token: accessToken,
           refresh_token: refreshToken,
         },
