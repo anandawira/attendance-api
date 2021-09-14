@@ -1,0 +1,116 @@
+openapi: 3.0.0
+
+info:
+  title: Attendance System with Geo Location
+  description: Glints Industry Project Exploration Group 1
+  version: 1.0.0
+
+servers:
+  - url: https://glints-ipe1-attendance.herokuapp.com/v1/
+    description: Backend main server
+
+tags:
+  - name: Account
+    description: Operations related to user accounts
+  - name: Attendance
+    description: Operations related to attendance records
+paths:
+  /accounts/auth:
+    post:
+      tags:
+      - Account
+      summary: Get user data and tokens by providing user's credentials in the request body
+      description: ''
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  format: email
+                password:
+                  type: string
+                  format: password
+              required:
+                - email
+                - password
+      responses:
+        '200':
+          description: OK. User authentication success.
+          content:
+            application/json:
+                schema:
+                  type: object
+                  properties:
+                    message:
+                      type: string
+                    data:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                        first_name:
+                          type: string
+                        last_name:
+                          type: string
+                        isAdmin:
+                          type: boolean
+                        access_token:
+                          type: string
+                        refresh_token:
+                          type: string
+        '400':
+          description: Bad Request. Request body did not pass validation.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  errors:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        value:
+                          type: string
+                        msg:
+                          type: string
+                        param:
+                          type: string
+                        location:
+                          type: string
+        '401':
+          description: Unauthorized. Email or password is incorrect
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+        '403':
+          description: Forbidden. Account has not been approved by admin
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  status:
+                    type: string
+        
+    
+
+      
+# components:
+#   securitySchemes:
+#     access_token: # arbitrary name for the security scheme
+#       type: http
+#       scheme: bearer
+#       bearerFormat: JWT
