@@ -13,7 +13,8 @@ This is our second project in the Glint's Industry Project Exploration Program. 
 ## Features
 
 ##### Authentication
-- Employee can register to the system using email and password. 
+
+- Employee can register to the system using email and password.
 - Employee need to wait for admin approval before using the account.
 - The system will send an email to the employee after their account has been approved by the admin.
 - Employee and admin can login to the system using email and password.
@@ -21,11 +22,13 @@ This is our second project in the Glint's Industry Project Exploration Program. 
 - Employee and admin can reset the password using the link they received by email
 
 ##### Main App
+
 - User must be within 100 meters radius from the office coordinate to fill the attendance.
 - User can fill the attendance by sending current location to the system using the app.
 - System can calculate total working hour of the day
 
 ##### Admin App
+
 - Admin can approve and reject registered user.
 - Admin can see list of attendance record by periods. Ex: daily, weekly, monthly.
 

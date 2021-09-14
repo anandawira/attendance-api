@@ -1,26 +1,29 @@
 // Import environment variable from .env file except when on production server
-if (process.env.NODE_ENV !== 'production') {
-  require('dotenv').config();
+if (process.env.NODE_ENV !== "production") {
+  require("dotenv").config();
 }
 
 // NPM packages
-const express = require('express');
-const morgan = require('morgan');
-const cors = require('cors');
-const compression = require('compression');
+const express = require("express");
+const morgan = require("morgan");
+const cors = require("cors");
+const compression = require("compression");
 const helmet = require("helmet");
 
+// Importing modules
+const accountsRouter = require("./routes/accounts");
+
 // Initializing mongoDB
-require('./configs/database')
+require("./configs/database");
 
 // Initializing express instance
-const app = express()
+const app = express();
 
 // Standard middleware
 app.use(
   morgan(
-    ':method :url :status :res[content-length] - :response-time[0] ms :user-agent',
-  ),
+    ":method :url :status :res[content-length] - :response-time[0] ms :user-agent"
+  )
 );
 app.use(express.urlencoded({ extended: false }));
 app.use(compression());
@@ -28,13 +31,13 @@ app.use(helmet());
 app.use(cors());
 
 // Routes
-app.get('/', (req, res)=>{
-  return res.send('This page is for API Documentation')
-})
+app.use("/v1/accounts");
+app.get("/", (req, res) => {
+  return res.send("This page is for API Documentation");
+});
 
 // Get port from environment variable or use 3000 on development
 const port = process.env.PORT || 3000;
 
 // Start listening on the port
 app.listen(port, () => console.log(`Listening on port ${port}`));
-
