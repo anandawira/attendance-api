@@ -89,7 +89,7 @@ exports.login = [
 
       // Send response to client
       return res.status(200).json({
-        message: 'User authenticated successfully',
+        message: 'User authentication success',
         data: {
           id: _id,
           first_name: first_name,
