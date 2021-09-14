@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
-const UserSchema = new Schema({
+const accountSchema = new Schema({
   first_name: { type: String, required: true, maxlength: 50 },
   last_name: { type: String, required: true, maxlength: 50 },
   email: {
@@ -14,8 +14,8 @@ const UserSchema = new Schema({
   isAdmin: { type: Boolean, default: false },
 }, {timestamps: true});
 
-UserSchema.statics.findByIdAndChangePassword = async function (id, hashedPassword){
+accountSchema.statics.findByIdAndChangePassword = async function (id, hashedPassword){
   return await this.findByIdAndUpdate(id, {password: hashedPassword})
 }
 
-module.exports = mongoose.model('User', UserSchema);
+module.exports = mongoose.model('Account', accountSchema);
