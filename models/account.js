@@ -13,6 +13,7 @@ const accountSchema = new Schema(
     },
     password: { type: String, required: true },
     isAdmin: { type: Boolean, default: false },
+    isApproved: { type: Boolean, default: false },
   },
   { timestamps: true }
 );
@@ -24,4 +25,7 @@ accountSchema.statics.findByIdAndChangePassword = async function (
   return await this.findByIdAndUpdate(id, { password: hashedPassword });
 };
 
+accountSchema.statics.isEmailExist = function (email) {
+  return this.findOne({ email: email });
+};
 module.exports = mongoose.model("Account", accountSchema);
