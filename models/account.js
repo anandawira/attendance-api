@@ -13,7 +13,11 @@ const accountSchema = new Schema(
     },
     password: { type: String, required: true },
     isAdmin: { type: Boolean, default: false },
-    isApproved: { type: Boolean, default: false },
+    status: {
+      type: String,
+      enum: ['pending', 'approved', 'rejected'],
+      default: 'pending',
+    },
   },
   { timestamps: true }
 );
