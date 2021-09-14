@@ -5,63 +5,105 @@ const nodemailer = require('nodemailer');
 const jwt = require('jsonwebtoken');
 
 // Register
-exports.register_new_account = async(req, res) => {
-  try {
-    // Sanitizing and validating
-    // ???
-
-    // Hashing password
-    const hashedpassword = await bcrypt.hash(req.body.password, 10);
-
-    // New Account
-    const account = new Account({
-      first_name: req.body.first_name,
-      last_name: req.body.last_name,
-      email: req.body.email,
-      password: hashedpassword
-    });
-
-    // Save
-    const saveAccount = await account.save();
-
-    // Send status success
-    res.sendStatus(201);
-    // res.status(201).json(saveAccount); //delete later
-
-    // Send email to Admin 
-    let transporter = nodemailer.createTransport({
-      service: 'gmail',
-      auth: {
-        user: 'glintsipe1@gmail.com', // generated ethereal user
-        pass: process.env.GMAIL_PASSWORD, // generated ethereal password
-      },
-    });
-    transporter.sendMail(
-      {
-        from: '"Attendance App Glints-IPE1" <glintsipe1@gmail.com>', // sender address
-        to: 'zidni.imani@gmail.com', // list of receivers change/delete later
-        subject: 'Account Register Approval', // Subject line
-        html: `<p>Hello Admin,</p>
-        <p>An account has just registered and needs your approval to login.</p>
-        <p>Please check your dashboard page and make sure to approve the right employee's email.</p>
-        <p><a href="https://attendance.app/dashboard">Click here to check it now.</a></p>
-        <p></p>
-        <p>Attendance App - Glints IPE 1</p>
-        `,
+exports.register_new_account = [
+  body('first_name')
+    .trim()
+    .isLength({ min: 1 })
+    .withMessage('First name must be specified')
+    .isAlpha()
+    .withMessage('First name has non-alphabetical characters'),
+  body('last_name')
+    .trim()
+    .isLength({ min: 1 })
+    .withMessage('Last name must be specified')
+    .isAlpha()
+    .withMessage('Last name has non-alphabetical characters'),
+  body('email')
+    .trim()
+    .isEmail()
+    .withMessage('Email invalid')
+    .toLowerCase()
+    .custom(async (email) => {
+      const account = await Account.isEmailExist(email);
+      if (account) {
+        return Promise.reject('Email already in use');
       }
-    );
-  } catch (error){
-    res.status(400).json({message: error.message});
-  }
-}
+    }),
+  body('password')
+    .isLength({ min: 8 })
+    .withMessage('Password must be more than 8 character length'),
+  
+  async(req, res, next) => {
+    // Check validation result
+    const errors = validationResult(req);
+    // Return fail in validation
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
+    }
+    try {
+      // Hashing password
+      const hashedpassword = await bcrypt.hash(req.body.password, 10);
 
-// Forgot Password
-exports.send_reset_password_email = async(req, res) => {
-  // Check email exis
+      // New Account
+      const account = new Account({
+        first_name: req.body.first_name,
+        last_name: req.body.last_name,
+        email: req.body.email,
+        password: hashedpassword
+      });
+
+      // Save
+      const saveAccount = await account.save();
+
+      // Send status success
+      res.sendStatus(201);
+      // res.status(201).json(saveAccount); //delete later
+
+      // Send email to Admin 
+      let transporter = nodemailer.createTransport({
+        service: 'gmail',
+        auth: {
+          user: 'glintsipe1@gmail.com', // generated ethereal user
+          pass: process.env.GMAIL_PASSWORD, // generated ethereal password
+        },
+      });
+      transporter.sendMail(
+        {
+          from: '"Attendance App Glints-IPE1" <glintsipe1@gmail.com>', // sender address
+          to: 'zidni.imani@gmail.com', // list of receivers change/delete later
+          subject: 'Account Register Approval', // Subject line
+          html: `<p>Hello Admin,</p>
+          <p>An account has just registered and needs your approval to login.</p>
+          <p>Please check your dashboard page and make sure to approve the right employee's email.</p>
+          <p><a href="https://attendance.app/dashboard">Click here to check it now.</a></p>
+          <p></p>
+          <p>Attendance App - Glints IPE 1</p>
+          `,
+        }
+      );
+    } catch (error){
+      res.status(400).json({message: error.message});
+    }
+  }
+];
+
+// Reset Password
+exports.reset_password = async(req, res) => {
+  // Check token
+  jwt.verify(
+    req.params.resetToken,
+    process.env.FORGET_PASSWORD_SECRET,
+    (error, user) => {
+      // Check errors
+      if (error) {
+        return res.status(403).json({ message: error.message });
+      }
+      // Add user to request object
+      req.user = user;
+    },
+  );
   const account = await Account.isEmailExist(req.body.email);
   if(!account) return res.status(404).json({message:"Email not found."});
-
-
   try {
     const resetToken = jwt.sign(
       { id: account.id },
@@ -106,6 +148,7 @@ exports.send_reset_password_email = async(req, res) => {
     res.status(400).json({message: error.message});
   }
 }
+
 exports.login = (req, res) => {
   return res.send("Login");
 };
