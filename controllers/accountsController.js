@@ -6,6 +6,7 @@ const jwt = require('jsonwebtoken');
 
 // Register
 exports.register_new_account = [
+  // Validating and sanitizing
   body('first_name')
     .trim()
     .isLength({ min: 1 })

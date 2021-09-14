@@ -9,9 +9,14 @@ const morgan = require("morgan");
 const cors = require("cors");
 const compression = require("compression");
 const helmet = require("helmet");
+const swaggerUi = require('swagger-ui-express');
+const YAML = require('yamljs');
 
 // Importing modules
 const accountsRouter = require("./routes/accounts");
+
+// Importing swagger file
+const swaggerDocument = YAML.load('./swagger.yaml');
 
 // Initializing mongoDB
 require("./configs/database");
@@ -32,8 +37,12 @@ app.use(cors());
 
 // Routes
 app.use("/v1/accounts", accountsRouter);
-app.get("/", (req, res) => {
-  return res.send("This page is for API Documentation");
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
+
+// Error handler
+app.use(function (err, req, res, next) {
+  // render the error page
+  res.status(err.status || 500).json({ message: err.message });
 });
 
 // Get port from environment variable or use 3000 on development
