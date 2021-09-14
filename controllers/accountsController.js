@@ -25,7 +25,7 @@ exports.login = [
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       return res.status(400).json({
-        message: 'Request body did not pass the validation process',
+        message: 'Request body did not pass the validation process.',
         errors: errors.array(),
       });
     }
@@ -40,7 +40,7 @@ exports.login = [
       // Check if account with user's email exist
       if (!account) {
         // If not found, send response to client
-        return res.status(401).json({ message: 'Email is not registered' });
+        return res.status(401).json({ message: 'Email is not registered.' });
       }
 
       // Destructure query result to variables
@@ -62,14 +62,14 @@ exports.login = [
       // Check comparison result
       if (!isPasswordMatch) {
         // If password did not match hashed password in database, send response to client
-        return res.status(401).json({ message: 'Incorrect password' });
+        return res.status(401).json({ message: 'Incorrect password.' });
       }
 
       // Check if account has been approved by admin.
       if (status !== 'approved') {
         // If status is not approved, send response to client
         return res.status(403).json({
-          message: 'This user has not been approved by admin',
+          message: 'This user has not been approved by admin.',
           status: status,
         });
       }
