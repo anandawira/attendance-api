@@ -83,7 +83,7 @@ exports.login = [
 
       // Generate refresh token
       const refreshToken = jwt.sign(
-        { id: _id, isAdmin: isAdmin },
+        { id: _id },
         process.env.REFRESH_TOKEN_SECRET
       );
 
