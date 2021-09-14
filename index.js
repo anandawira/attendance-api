@@ -31,7 +31,7 @@ app.use(helmet());
 app.use(cors());
 
 // Routes
-app.use("/v1/accounts");
+app.use("/v1/accounts", accountsRouter);
 app.get("/", (req, res) => {
   return res.send("This page is for API Documentation");
 });
