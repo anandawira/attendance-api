@@ -4,9 +4,12 @@ const Schema = mongoose.Schema;
 const AttendanceSchema = new Schema({
   user: { type: Schema.Types.ObjectId, ref: 'User' },
   in_time: { type: Date, required: true },
-  in_location: { type: { lat: Number, long: Number }, required: true },
+  in_location: {
+    lat: { type: Number, required: true },
+    long: { type: Number, required: true },
+  },
   out_time: { type: Date },
-  out_location: { type: { lat: Number, long: Number } },
+  out_location: { lat: Number, long: Number },
 });
 
 // Get work duration in milliseconds
