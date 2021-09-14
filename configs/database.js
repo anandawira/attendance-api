@@ -1,8 +1,8 @@
-const mongoose = require("mongoose");
+const mongoose = require('mongoose');
 
 // Database connection
 mongoose.connect(
-  process.env.NODE_ENV === "production"
+  process.env.NODE_ENV === 'production'
     ? process.env.MONGO_DB_PROD
     : process.env.MONGO_DB_DEV,
   {
@@ -11,11 +11,11 @@ mongoose.connect(
   }
 );
 
-mongoose.connection.once("connected", () => {
-  console.info.bind(console, "MongoDB connected successfully");
+mongoose.connection.once('connected', () => {
+  console.info.bind(console, 'MongoDB connected successfully');
 });
 
 mongoose.connection.on(
-  "error",
-  console.error.bind(console, "MongoDB connection error")
+  'error',
+  console.error.bind(console, 'MongoDB connection error')
 );

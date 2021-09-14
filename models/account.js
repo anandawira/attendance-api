@@ -1,4 +1,4 @@
-const mongoose = require("mongoose");
+const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
 const accountSchema = new Schema(
@@ -24,4 +24,4 @@ accountSchema.statics.findByIdAndChangePassword = async function (
   return await this.findByIdAndUpdate(id, { password: hashedPassword });
 };
 
-module.exports = mongoose.model("Account", accountSchema);
+module.exports = mongoose.model('Account', accountSchema);
