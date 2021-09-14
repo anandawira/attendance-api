@@ -1,5 +1,6 @@
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
+const mongooseLeanVirtuals = require('mongoose-lean-virtuals');
 
 const AttendanceSchema = new Schema({
   user: { type: Schema.Types.ObjectId, ref: 'User' },
@@ -13,11 +14,13 @@ const AttendanceSchema = new Schema({
 });
 
 // Get work duration in milliseconds
-AttendanceSchema.virtual('work_duration').get(function () {
+AttendanceSchema.virtual('work_duration_minutes').get(function () {
   if (this.out_time === undefined) {
     return undefined;
   }
-  return this.out_time - this.in_time;
+  return Math.floor((this.out_time - this.in_time) / (60 * 1000));
 });
+
+AttendanceSchema.plugin(mongooseLeanVirtuals);
 
 module.exports = mongoose.model('Attendance', AttendanceSchema);

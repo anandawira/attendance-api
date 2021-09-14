@@ -11,10 +11,14 @@ exports.get_all_attendances = async (req, res, next) => {
 
   try {
     // Retrieve all attendances
-    const attendances = await Attendance.find({}).lean();
+    const attendances = await Attendance.find({
+      out_time: { $exists: true },
+    }).lean({ virtuals: true });
+
+    // Send response to user
     return res.json(attendances);
   } catch (err) {
+    // Pass error to error handler
     return next(err);
   }
-  // Send response to user
 };
