@@ -75,6 +75,44 @@ paths:
                 properties:
                   message:
                     type: string
+  /accounts/forget-password:
+    post:
+      tags:
+        - Account
+      summary: Request server to send link to reset password to user's email.
+      description: ''
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+              required:
+                - email
+      responses:
+        '200':
+          description: Operation success. Email sent to the user.
+        '404':
+          description: Email not found in the database
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
   /accounts/auth:
     post:
       tags:

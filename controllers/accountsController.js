@@ -80,7 +80,15 @@ exports.register_new_account = [
           <p></p>
           <p>Attendance App - Glints IPE 1</p>
           `,
-        }
+        },
+        (error, info) => {
+          // Check errors
+          if (error) {
+            return res.sendStatus(500);
+          }
+          // Send response
+          return res.sendStatus(200);
+        },
       );
     } catch (error){
       res.status(400).json({message: error.message});
@@ -88,23 +96,12 @@ exports.register_new_account = [
   }
 ];
 
-// Reset Password
-exports.reset_password = async(req, res) => {
-  // Check token
-  jwt.verify(
-    req.params.resetToken,
-    process.env.FORGET_PASSWORD_SECRET,
-    (error, user) => {
-      // Check errors
-      if (error) {
-        return res.status(403).json({ message: error.message });
-      }
-      // Add user to request object
-      req.user = user;
-    },
-  );
+// Forget Password
+exports.forget_password = async(req, res) => {
+  // Check email
   const account = await Account.isEmailExist(req.body.email);
-  if(!account) return res.status(404).json({message:"Email not found."});
+  if(!account) return res.status(404).json({ message:"Email not found." });
+  // console.log(account) //delete later
   try {
     const resetToken = jwt.sign(
       { id: account.id },
@@ -131,7 +128,7 @@ exports.reset_password = async(req, res) => {
         <p>Looks like you forgot your password. We cannot simply send you your old password.</p>
         <p>A unique link to reset your password has been generated for you. To
         reset your password, click the following link and follow the instructions.</p>
-        <p><a href="https://${req.hostname}/reset-password/${resetToken}">Click here to reset your password</a>. This link will expire in 15 minutes.</p>
+        <p><a href="https://${req.hostname}/reset-password/?token=${resetToken}">Click here to reset your password</a>. This link will expire in 15 minutes.</p>
         <p></p>
         <p>Attendance App - Glints IPE 1</p>
         `, // html body
@@ -139,7 +136,7 @@ exports.reset_password = async(req, res) => {
       (error, info) => {
         // Check errors
         if (error) {
-          return next(err);
+          return res.sendStatus(500);
         }
         // Send response
         return res.sendStatus(200);
