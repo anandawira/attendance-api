@@ -32,6 +32,7 @@ exports.get_all_attendances = [
       });
     }
 
+    console.time('Creating date range objects');
     // Create current date object
     const now = DateTime.now().setZone('Asia/Jakarta');
 
@@ -48,19 +49,23 @@ exports.get_all_attendances = [
         ? { year: year, month: month + 1 }
         : { year: year + 1, month: 1 }
     ).setZone('Asia/Jakarta');
-
+    console.timeEnd('Creating date range objects');
     try {
+      console.time('Retrieve from database');
       // Retrieve all attendances in period
       const attendances = await Attendance.find(
         {
-          out_time: { $exists: true },
           in_time: { $gte: startDate, $lt: endDate },
+          out_time: { $exists: true },
         },
         '-_id -__v'
       )
         .lean({ virtuals: true })
         .populate('account', 'first_name last_name email');
 
+      console.timeEnd('Retrieve from database');
+
+      console.time('Creating results object');
       // Creating result object
       const results = attendances.map((attendance) => {
         const { first_name, last_name, email } = attendance.account;
@@ -78,6 +83,7 @@ exports.get_all_attendances = [
           work_duration,
         };
       });
+      console.timeEnd('Creating results object');
 
       // Send response to user
       return res.status(200).json({
