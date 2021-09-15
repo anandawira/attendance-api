@@ -20,6 +20,9 @@ const authenticateAccessToken = require('./middleware/authenticateAccessToken');
 // Importing swagger file
 const swaggerDocument = YAML.load('./swagger.yaml');
 
+// Importing swagger file
+const swaggerDocument = YAML.load('./swagger.yaml');
+
 // Initializing mongoDB
 require('./configs/database');
 

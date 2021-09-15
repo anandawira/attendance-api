@@ -104,10 +104,6 @@ paths:
                     type: string
                   status:
                     type: string
-        
-    
-
-      
 # components:
 #   securitySchemes:
 #     access_token: # arbitrary name for the security scheme
