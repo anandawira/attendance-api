@@ -51,13 +51,39 @@ exports.get_all_attendances = [
 
     try {
       // Retrieve all attendances in period
-      const attendances = await Attendance.find({
-        out_time: { $exists: true },
-        in_time: { $gte: startDate, $lt: endDate },
-      }).lean({ virtuals: true });
+      const attendances = await Attendance.find(
+        {
+          out_time: { $exists: true },
+          in_time: { $gte: startDate, $lt: endDate },
+        },
+        '-_id -__v'
+      )
+        .lean({ virtuals: true })
+        .populate('account', 'first_name last_name email');
+
+      // Creating result object
+      const results = attendances.map((attendance) => {
+        const { first_name, last_name, email } = attendance.account;
+        const { in_time, in_location, out_time, out_location, work_duration } =
+          attendance;
+
+        return {
+          first_name,
+          last_name,
+          email,
+          in_time,
+          in_location,
+          out_time,
+          out_location,
+          work_duration,
+        };
+      });
 
       // Send response to user
-      return res.json(attendances);
+      return res.json({
+        message: 'Attendances of all users retrieved successfully',
+        results,
+      });
     } catch (err) {
       // Pass error to error handler
       return next(err);
