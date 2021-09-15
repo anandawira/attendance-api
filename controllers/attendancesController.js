@@ -2,7 +2,7 @@ const Attendance = require('../models/attendance');
 const { DateTime } = require('luxon');
 const { query, validationResult } = require('express-validator');
 
-// TODO: filter by period
+// Get all attendance of all user in a monthly period. Admin only.
 exports.get_all_attendances = [
   query('year')
     .optional()
