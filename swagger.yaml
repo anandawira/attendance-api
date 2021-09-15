@@ -15,6 +15,168 @@ tags:
   - name: Attendance
     description: Operations related to attendance records
 paths:
+  /accounts/register:
+    post:
+      tags:
+        - Account
+      summary: Register a new user to the server
+      description: ''
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                first_name:
+                  type: string
+                last_name:
+                  type: string
+                email:
+                  type: string
+                  format: email
+                password:
+                  type: string
+                  format: password
+              required:
+                - first_name
+                - last_name
+                - email
+                - password
+      responses:
+        '201':
+          description: User registered to the application successfully
+        '400':
+          description: Bad Request. One of form data did NOT meet the requirement.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  errors:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        value:
+                          type: string
+                        msg:
+                          type: string
+                        param:
+                          type: string
+                        location:
+                          type: string
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+
+  /accounts/forget-password:
+    post:
+      tags:
+        - Account
+      summary: Request server to send link to reset password to user's email.
+      description: ''
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+              required:
+                - email
+      responses:
+        '200':
+          description: Operation success. Email sent to the user.
+        '404':
+          description: Email not found in the database
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+
+  /accounts/reset-password/{resetToken}:
+      post:
+        tags:
+          - Account
+        summary: Change user's password
+        description: ''
+        parameters:
+          - in: path
+            name: resetToken # Note the name is the same as in the path
+            required: true
+            schema:
+              type: string
+            description: request token from the email
+        requestBody:
+          required: true
+          content:
+            application/x-www-form-urlencoded:
+              schema:
+                type: object
+                properties:
+                  password:
+                    type: string
+                required:
+                  - password
+        responses:
+          '200':
+            description: Password changed successfully
+            content:
+              application/json:
+                schema:
+                  type: object
+                  properties:
+                    message:
+                      type: string
+          '400':
+            description: Password rejected. Must be at least 8 characters long.
+            content:
+              application/json:
+                schema:
+                  type: object
+                  properties:
+                    message:
+                      type: string
+          '403':
+            description: Reset token is incorrect
+            content:
+              application/json:
+                schema:
+                  type: object
+                  properties:
+                    message:
+                      type: string
+          '500':
+            description: Internal server error
+            content:
+              application/json:
+                schema:
+                  type: object
+                  properties:
+                    message:
+                      type: string
+
   /accounts/auth:
     post:
       tags:
