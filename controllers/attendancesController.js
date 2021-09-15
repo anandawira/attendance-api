@@ -19,7 +19,7 @@ exports.get_all_attendances = [
     if (!req.account.isAdmin) {
       return res
         .status(403)
-        .json({ message: `This user don't have admin privilege` });
+        .json({ message: `Current user don't have admin privilege` });
     }
 
     // Check validation result
@@ -80,7 +80,7 @@ exports.get_all_attendances = [
       });
 
       // Send response to user
-      return res.json({
+      return res.status(200).json({
         message: 'Attendances of all users retrieved successfully',
         results,
       });
