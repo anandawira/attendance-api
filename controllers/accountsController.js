@@ -147,6 +147,49 @@ exports.forget_password = async(req, res) => {
   }
 }
 
+// Reset password
+exports.reset_password = [
+  // Validate password
+  body('password')
+    .isLength({ min: 8 })
+    .withMessage('Password must be more than 8 character length'),
+  
+  async(req, res, next) => {
+    try {
+      // Verify token
+      jwt.verify(
+        req.params.resetToken,
+        process.env.FORGET_PASSWORD_SECRET,
+        (error, account) => {
+          // Check errors
+          if (error) {
+            return res.status(403).json({ message: "Reset token is incorrect" });
+          }
+          // Add account to request object
+          req.account = account;
+        },
+      );
+      // Check validation result
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        return res.status(400).json({ message: 'Password must be more than 8 character length' });
+      }
+  
+      // Hashing password
+      const hashedPassword = await bcrypt.hash(req.body.password, 10);
+
+      // Update password
+      Account.findByIdAndChangePassword(req.account.id, hashedPassword);
+
+      // Send status success
+      res.status(200).json({ message: 'Password updated successfully' });
+    } catch (error) {
+      // Send error message
+      res.status(400).json({message: error.message});
+    };
+  }
+];
+
 exports.login = (req, res) => {
   return res.send("Login");
 };
