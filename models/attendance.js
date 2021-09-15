@@ -3,7 +3,7 @@ const Schema = mongoose.Schema;
 const mongooseLeanVirtuals = require('mongoose-lean-virtuals');
 
 const AttendanceSchema = new Schema({
-  user: { type: Schema.Types.ObjectId, ref: 'User' },
+  account: { type: Schema.Types.ObjectId, ref: 'Account' },
   in_time: { type: Date, required: true },
   in_location: {
     lat: { type: Number, required: true },
