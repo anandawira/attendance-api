@@ -22,6 +22,7 @@
     "express-validator": "^6.12.1",
     "helmet": "^4.6.0",
     "jsonwebtoken": "^8.5.1",
+    "luxon": "^2.0.2",
     "mongoose": "^6.0.5",
     "mongoose-lean-virtuals": "^0.8.0",
     "morgan": "^1.10.0",
