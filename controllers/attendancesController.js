@@ -1,9 +1,10 @@
 const Attendance = require('../models/attendance');
+const Account = require('../models/account');
 const { DateTime } = require('luxon');
-const { query, validationResult } = require('express-validator');
+const { query, param, validationResult } = require('express-validator');
 
 // Get all attendance of all user in a monthly period. Admin only.
-exports.get_all_attendances = [
+exports.get_attendances_of_all_users = [
   query('year')
     .optional()
     .isInt({ min: 1, max: 10000 })
@@ -94,5 +95,33 @@ exports.get_all_attendances = [
       // Pass error to error handler
       return next(err);
     }
+  },
+];
+
+exports.get_attendances_by_user_id = [
+  param('userId')
+    .isMongoId()
+    .withMessage(`'user id is invalid`)
+    .bail()
+    .custom(async (id) => {
+      const isAccountExist = await Account.exists({ _id: id });
+      console.log(isAccountExist);
+      if (!isAccountExist) {
+        throw new Error();
+      }
+    })
+    .withMessage('user id is not registered in the system'),
+  (req, res) => {
+    // Check validation result
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({
+        message:
+          'Request query parameters did not pass the validation process.',
+        errors: errors.array(),
+      });
+    }
+
+    return res.send('get attendances by id');
   },
 ];

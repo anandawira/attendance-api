@@ -8,8 +8,13 @@ router.use(authenticateAccessToken);
 
 /* 
 [GET] /v1/attendances
-Get all attendances
+Get attendances of all users
 */
-router.get('/', attendancesController.get_all_attendances);
+router.get('/', attendancesController.get_attendances_of_all_users);
 
+/* 
+[GET] /v1/attendances/{userId}
+Get attendances by user id
+*/
+router.get('/:userId', attendancesController.get_attendances_by_user_id);
 module.exports = router;
