@@ -36,4 +36,13 @@ router.post(
   attendancesController.check_in_attendance_by_user_id
 );
 
+/* 
+[POST] /v1/attendances/{userId}/out
+Check out attendance of current user
+*/
+router.post(
+  '/:userId/out',
+  attendancesController.check_out_attendance_by_user_id
+);
+
 module.exports = router;

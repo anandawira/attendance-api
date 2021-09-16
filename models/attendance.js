@@ -30,7 +30,7 @@ AttendanceSchema.statics.findByUserIdAndGetStatus = async function (userId) {
       {
         account: userId,
       },
-      '-_id -__v -account'
+      '-__v -account'
     )
       .lean()
       .sort({ in_time: -1 })
@@ -46,20 +46,36 @@ AttendanceSchema.statics.findByUserIdAndGetStatus = async function (userId) {
 
     const attendance = attendances[0];
 
+    const {
+      _id: id,
+      in_time,
+      in_location,
+      out_time,
+      out_location,
+    } = attendance;
+
+    const data = {
+      id,
+      in_time,
+      in_location,
+      out_time,
+      out_location,
+    };
+
     // Check if out_time is undefined
     if (attendance.out_time === undefined) {
       return {
         canCheckIn: false,
         canCheckOut: true,
-        last_record: attendance,
+        last_record: data,
       };
     }
 
     // Check if in_time is yesterday
     if (attendance.in_time < startOfToday) {
-      return { canCheckIn: true, canCheckOut: false, last_record: attendance };
+      return { canCheckIn: true, canCheckOut: false, last_record: data };
     } else {
-      return { canCheckIn: false, canCheckOut: false, last_record: attendance };
+      return { canCheckIn: false, canCheckOut: false, last_record: data };
     }
   } catch (err) {
     throw new Error();

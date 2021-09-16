@@ -277,7 +277,13 @@ exports.check_in_attendance_by_user_id = [
       if (!userStatus.canCheckIn) {
         return res
           .status(403)
+<<<<<<< HEAD
           .json({ message: 'Cannot check in this user.', data: userStatus });
+=======
+          .json({
+            message: 'Cannot check in this user. User already checked in today',
+          });
+>>>>>>> origin/ananda-checkOut
       }
 
       // Calculate distance between user and the office
@@ -304,6 +310,85 @@ exports.check_in_attendance_by_user_id = [
 
       return res.status(201).json({
         message: `Check in success. Time and location saved in the database.`,
+      });
+    } catch (err) {
+      return next(err);
+    }
+  },
+];
+
+exports.check_out_attendance_by_user_id = [
+  body('lat')
+    .exists()
+    .withMessage(`Required field 'lat' not found in request body`)
+    .bail()
+    .isFloat({ min: -90, max: 90 })
+    .withMessage(`field 'lat' value must be a float number between -90 and 90`)
+    .toFloat(),
+  body('long')
+    .exists()
+    .withMessage(`Required field 'long' not found in request body`)
+    .bail()
+    .isFloat({ min: -180, max: 180 })
+    .withMessage(
+      `field 'long' value must be a float number between -180 and 180`
+    )
+    .toFloat(),
+  async (req, res, next) => {
+    // Check validation result
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({
+        message: 'Request body fields did not pass the validation process.',
+        errors: errors.array(),
+      });
+    }
+
+    // Check if current account match with requested user id in query params
+    if (req.account.id !== req.params.userId) {
+      return res.status(403).json({
+        message:
+          'Current account does not have access to the requested user id.',
+      });
+    }
+
+    try {
+      // Get user status
+      const userStatus = await Attendance.findByUserIdAndGetStatus(
+        req.account.id
+      );
+
+      // Check if user can check out
+      if (!userStatus.canCheckOut) {
+        return res.status(403).json({ message: 'Cannot check out this user.' });
+      }
+
+      // Calculate distance between user and the office
+      const distance = getDistance(
+        { latitude: req.body.lat, longitude: req.body.long },
+        { latitude: -6.175, longitude: 106.8286 } // HARD CODED
+      );
+
+      // Check if user location is inside 100 meters radius
+      if (distance > 100) {
+        return res.status(400).json({
+          message:
+            'Location rejected. Must be inside 100 meters radius from the office',
+        });
+      }
+
+      const updatedAttendance = await Attendance.findByIdAndUpdate(
+        userStatus.last_record.id,
+        {
+          $set: {
+            out_time: new Date(),
+            out_location: { lat: req.body.lat, long: req.body.long },
+          },
+        }
+      );
+
+      return res.status(201).json({
+        message: `Check out success. Time and location saved in the database.`,
       });
     } catch (err) {
       return next(err);
