@@ -20,26 +20,25 @@ module.exports = [
     // Check cached data
     console.time('using cache');
     const cachedAccount = await getAsync(`auth:${accessToken}`);
-    console.timeEnd('using cache');
-    // if (cachedAccount) {
-    //   req.account = JSON.parse(cachedAccount);
-    //   console.log('use cache', cachedAccount);
-    //   return next();
-    // }
-    
+    if (cachedAccount) {
+      req.account = JSON.parse(cachedAccount);
+      console.timeEnd('using cache');
+      console.log('use cache', cachedAccount);
+      return next();
+    }
 
     try {
       console.time('using jwt');
       // Verify access token
       const account = jwt.verify(accessToken, process.env.ACCESS_TOKEN_SECRET);
-      console.timeEnd('using jwt');
-
+      
       // Destructure account data from account object
       const { id, isAdmin } = account;
 
       // Add account data to the request object
       req.account = { id, isAdmin };
-
+      
+      console.timeEnd('using jwt');
       // Continue to next middleware
       next();
 
