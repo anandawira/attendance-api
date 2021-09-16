@@ -51,7 +51,7 @@ exports.get_attendances_of_all_users = [
     ).setZone('Asia/Jakarta');
 
     try {
-      // Retrieve all attendances in period
+      // Retrieve attendances in period
       const attendances = await Attendance.find(
         {
           in_time: { $gte: startDate, $lt: endDate },
@@ -99,13 +99,22 @@ exports.get_attendances_by_user_id = [
     .bail()
     .custom(async (id) => {
       const isAccountExist = await Account.exists({ _id: id });
-      console.log(isAccountExist);
       if (!isAccountExist) {
         throw new Error();
       }
     })
     .withMessage('user id is not registered in the system'),
-  (req, res) => {
+  query('year')
+    .optional()
+    .isInt({ min: 1, max: 10000 })
+    .withMessage(`query parameter 'year' invalid.`),
+  query('month')
+    .optional()
+    .isInt({ min: 1, max: 12 })
+    .withMessage(
+      `query parameter 'month' is invalid. please only use number 1 to 12.`
+    ),
+  async (req, res, next) => {
     // Check validation result
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
@@ -116,6 +125,62 @@ exports.get_attendances_by_user_id = [
       });
     }
 
-    return res.send('get attendances by id');
+    // Check if current account match with requested user id in query params
+    if (req.account.id !== req.params.userId) {
+      return res.status(403).json({
+        message:
+          'Current account does not have access to the requested user id.',
+      });
+    }
+
+    // Create current date object
+    const now = DateTime.now().setZone('Asia/Jakarta');
+
+    // Get year and month from query parameters with default current year and month
+    const year = parseInt(req.query.year ?? now.year);
+    const month = parseInt(req.query.month ?? now.month);
+
+    // Generating startDate and endDate for mongoDB querying
+    const startDate = DateTime.fromObject({ year: year, month: month }).setZone(
+      'Asia/Jakarta'
+    );
+    const endDate = DateTime.fromObject(
+      month !== 12
+        ? { year: year, month: month + 1 }
+        : { year: year + 1, month: 1 }
+    ).setZone('Asia/Jakarta');
+
+    try {
+      // Retrieve attendances by user id in period
+      const attendances = await Attendance.find(
+        {
+          in_time: { $gte: startDate, $lt: endDate },
+          account: req.account.id,
+          out_time: { $exists: true },
+        },
+        '-_id -__v -account'
+      ).lean({ virtuals: true });
+
+      // Creating result object
+      const results = attendances.map((attendance) => {
+        const { in_time, in_location, out_time, out_location, work_duration } =
+          attendance;
+
+        return {
+          in_time,
+          in_location,
+          out_time,
+          out_location,
+          work_duration,
+        };
+      });
+
+      return res.status(200).json({
+        message: 'Attendance of requested user retrieved successfully.',
+        results,
+      });
+    } catch (err) {
+      return next(err);
+    }
   },
 ];
