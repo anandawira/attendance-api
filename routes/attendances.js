@@ -27,4 +27,13 @@ router.get(
   attendancesController.get_user_today_attendance_status
 );
 
+/* 
+[POST] /v1/attendances/{userId}/in
+Check in attendance of current user
+*/
+router.post(
+  '/:userId/in',
+  attendancesController.check_in_attendance_by_user_id
+);
+
 module.exports = router;
