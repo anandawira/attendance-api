@@ -8,6 +8,6 @@ client.on('error', (error) => {
 });
 
 const getAsync = promisify(client.get).bind(client);
-const setAsync = promisify(client.set).bind(client);
+const setexAsync = promisify(client.setex).bind(client);
 
-module.exports = { client, getAsync, setAsync };
+module.exports = { client, getAsync, setexAsync };

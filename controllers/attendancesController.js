@@ -3,6 +3,7 @@ const Account = require('../models/account');
 const { DateTime } = require('luxon');
 const { query, param, validationResult, body } = require('express-validator');
 const { getDistance } = require('geolib');
+const { client, getAsync, setexAsync } = require('../configs/redis-client');
 
 // Get all attendance of all user in a monthly period. Admin only.
 exports.get_attendances_of_all_users = [
@@ -51,8 +52,15 @@ exports.get_attendances_of_all_users = [
         : { year: year + 1, month: 1 }
     ).setZone('Asia/Jakarta');
 
+    // Check cache
+    console.time('cached');
+    client.get(`Attendances:all:${year}:${month}`, (err, data) => {
+      console.timeEnd('cached');
+    });
+
     try {
       // Retrieve attendances in period
+      console.time('database');
       const attendances = await Attendance.find(
         {
           in_time: { $gte: startDate, $lt: endDate },
@@ -81,11 +89,20 @@ exports.get_attendances_of_all_users = [
         };
       });
 
+      console.timeEnd('database');
+
       // Send response to user
-      return res.status(200).json({
+      res.status(200).json({
         message: 'Attendances of all users retrieved successfully',
         results,
       });
+
+      // Save to cache for 4 hours
+      await setexAsync(
+        `Attendances:all:${year}:${month}`,
+        4 * 60 * 60,
+        JSON.stringify(results)
+      );
     } catch (err) {
       // Pass error to error handler
       return next(err);
@@ -275,11 +292,9 @@ exports.check_in_attendance_by_user_id = [
 
       // Check if user can check in
       if (!userStatus.canCheckIn) {
-        return res
-          .status(403)
-          .json({
-            message: 'Cannot check in this user. User already checked in today',
-          });
+        return res.status(403).json({
+          message: 'Cannot check in this user. User already checked in today',
+        });
       }
 
       // Calculate distance between user and the office
