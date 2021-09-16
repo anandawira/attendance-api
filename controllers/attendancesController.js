@@ -184,3 +184,49 @@ exports.get_attendances_by_user_id = [
     }
   },
 ];
+
+exports.get_user_today_attendance_status = [
+  param('userId')
+    .isMongoId()
+    .withMessage(`'user id is invalid`)
+    .bail()
+    .custom(async (id) => {
+      const isAccountExist = await Account.exists({ _id: id });
+      if (!isAccountExist) {
+        throw new Error();
+      }
+    })
+    .withMessage('user id is not registered in the system'),
+  async (req, res, next) => {
+    // Check validation result
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({
+        message:
+          'Request query parameters did not pass the validation process.',
+        errors: errors.array(),
+      });
+    }
+
+    // Check if current account match with requested user id in query params
+    if (req.account.id !== req.params.userId) {
+      return res.status(403).json({
+        message:
+          'Current account does not have access to the requested user id.',
+      });
+    }
+
+    try {
+      const userStatus = await Attendance.findByUserIdAndGetStatus(
+        req.account.id
+      );
+
+      return res.status(200).json({
+        message: 'User attendance status retrieved successfully.',
+        data: userStatus,
+      });
+    } catch (err) {
+      return next(err);
+    }
+  },
+];

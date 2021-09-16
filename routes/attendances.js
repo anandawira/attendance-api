@@ -17,4 +17,14 @@ router.get('/', attendancesController.get_attendances_of_all_users);
 Get attendances by user id
 */
 router.get('/:userId', attendancesController.get_attendances_by_user_id);
+
+/* 
+[GET] /v1/attendances/{userId}/status
+Get user's today attendance status
+*/
+router.get(
+  '/:userId/status',
+  attendancesController.get_user_today_attendance_status
+);
+
 module.exports = router;
