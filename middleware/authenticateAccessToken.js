@@ -104,7 +104,4 @@ module.exports = [
       });
     }
   },
-  (req, res) => {
-    return res.json({ account: req.account });
-  },
 ];
