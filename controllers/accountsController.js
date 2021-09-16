@@ -10,32 +10,34 @@ exports.register_new_account = [
   body('first_name')
     .trim()
     .isLength({ min: 1 })
-    .withMessage('First name must be specified'),
+    .withMessage('First name must be specified.'),
   body('last_name')
     .trim()
     .isLength({ min: 1 })
-    .withMessage('Last name must be specified'),
+    .withMessage('Last name must be specified.'),
   body('email')
     .trim()
     .isEmail()
-    .withMessage('Email invalid')
+    .withMessage('Email invalid.')
     .toLowerCase()
     .custom(async (email) => {
       const account = await Account.isEmailExist(email);
       if (account) {
-        return Promise.reject('Email already in use');
+        return Promise.reject('Email already in use.');
       }
     }),
   body('password')
     .isLength({ min: 8 })
-    .withMessage('Password must be more than 8 character length'),
+    .withMessage('Password must be more than 8 character length.'),
   
-  async(req, res, next) => {
+  async(req, res) => {
     // Check validation result
     const errors = validationResult(req);
     // Return fail in validation
     if (!errors.isEmpty()) {
-      return res.status(400).json({ errors: errors.array() });
+      return res.status(400).json({ 
+        message: 'Request body did not pass the validation process.',
+        errors: errors.array() });
     }
     try {
       // Hashing password
@@ -48,13 +50,6 @@ exports.register_new_account = [
         email: req.body.email,
         password: hashedpassword
       });
-
-      // Save
-      const saveAccount = await account.save();
-
-      // Send status success
-      res.sendStatus(201);
-      // res.status(201).json(saveAccount); //delete later
 
       // Send email to Admin 
       let transporter = nodemailer.createTransport({
@@ -76,18 +71,17 @@ exports.register_new_account = [
           <p></p>
           <p>Attendance App - Glints IPE 1</p>
           `,
-        },
-        (error, info) => {
-          // Check errors
-          if (error) {
-            return res.sendStatus(500);
-          }
-          // Send response
-          return res.sendStatus(200);
-        },
+        }
       );
+
+      // Save
+      const saveAccount = await account.save();
+
+      // Send status success
+      return res.status(201).json({message:"Account register success."});
+
     } catch (error){
-      res.status(400).json({message: error.message});
+      next(error);
     }
   }
 ];
@@ -97,7 +91,7 @@ exports.forget_password = async(req, res) => {
   // Check email
   const account = await Account.isEmailExist(req.body.email);
   if(!account) return res.status(404).json({ message:"Email not found." });
-  // console.log(account) //delete later
+
   try {
     const resetToken = jwt.sign(
       { id: account.id },
