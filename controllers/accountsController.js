@@ -10,15 +10,11 @@ exports.register_new_account = [
   body('first_name')
     .trim()
     .isLength({ min: 1 })
-    .withMessage('First name must be specified')
-    .isAlpha()
-    .withMessage('First name has non-alphabetical characters'),
+    .withMessage('First name must be specified'),
   body('last_name')
     .trim()
     .isLength({ min: 1 })
-    .withMessage('Last name must be specified')
-    .isAlpha()
-    .withMessage('Last name has non-alphabetical characters'),
+    .withMessage('Last name must be specified'),
   body('email')
     .trim()
     .isEmail()

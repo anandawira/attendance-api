@@ -14,6 +14,8 @@ tags:
     description: Operations related to user accounts
   - name: Attendance
     description: Operations related to attendance records
+  - name : Admin
+    description: Operation related to admin authority
 paths:
   /accounts/register:
     post:
@@ -265,6 +267,69 @@ paths:
                   message:
                     type: string
                   status:
+                    type: string
+  /admin/accounts:
+    get:
+      tags:
+      - Admin
+      summary: Get all registered account
+      description: ''
+      security:
+        - access_token: []
+      parameters:
+        - in: header
+          name: refresh_token
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Success retrieve account list
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                  first_name:
+                    type: string
+                  last_name:
+                    type: string
+                  email:
+                    type: string
+                    format: email
+                  status:
+                    type: string
+                    enum: [pending, approved, rejected]
+                  CreatedAt:
+                    type: string
+                    format: date
+        '401':
+          description: Authentication error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+        '403':
+          description: Forbidden error. Access token invalid or user don't have admin role
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
                     type: string
 # components:
 #   securitySchemes:

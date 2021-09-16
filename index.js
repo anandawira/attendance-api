@@ -15,6 +15,7 @@ const YAML = require('yamljs');
 // Importing modules
 const accountsRouter = require('./routes/accounts');
 const authenticateAccessToken = require('./middleware/authenticateAccessToken');
+const adminRouter = require('./routes/admin');
 
 // Importing swagger file
 const swaggerDocument = YAML.load('./swagger.yaml');
@@ -38,6 +39,7 @@ app.use(cors());
 
 // Routes
 app.use('/v1/accounts', accountsRouter);
+app.use('/v1/admin', adminRouter);
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 app.get('/test-auth', authenticateAccessToken);
 
