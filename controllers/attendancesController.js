@@ -33,7 +33,6 @@ exports.get_attendances_of_all_users = [
       });
     }
 
-    console.time('Creating date range objects');
     // Create current date object
     const now = DateTime.now().setZone('Asia/Jakarta');
 
@@ -50,9 +49,8 @@ exports.get_attendances_of_all_users = [
         ? { year: year, month: month + 1 }
         : { year: year + 1, month: 1 }
     ).setZone('Asia/Jakarta');
-    console.timeEnd('Creating date range objects');
+
     try {
-      console.time('Retrieve from database');
       // Retrieve all attendances in period
       const attendances = await Attendance.find(
         {
@@ -64,9 +62,6 @@ exports.get_attendances_of_all_users = [
         .lean({ virtuals: true })
         .populate('account', 'first_name last_name email');
 
-      console.timeEnd('Retrieve from database');
-
-      console.time('Creating results object');
       // Creating result object
       const results = attendances.map((attendance) => {
         const { first_name, last_name, email } = attendance.account;
@@ -84,7 +79,6 @@ exports.get_attendances_of_all_users = [
           work_duration,
         };
       });
-      console.timeEnd('Creating results object');
 
       // Send response to user
       return res.status(200).json({
