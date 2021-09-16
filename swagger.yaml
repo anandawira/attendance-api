@@ -47,14 +47,25 @@ paths:
                 - password
       responses:
         '201':
-          description: User registered to the application successfully
-        '400':
-          description: Bad Request. One of form data did NOT meet the requirement.
+          description: User registered to the application successfully.
           content:
             application/json:
               schema:
                 type: object
                 properties:
+                  message:
+                    type: string
+                    example: Account register success.
+        '400':
+          description: Bad Request. One of form data did NOT meet the requirements.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Request body did not pass the validation process.
                   errors:
                     type: array
                     items:
@@ -98,8 +109,6 @@ paths:
       responses:
         '200':
           description: Operation success. Email sent to the user.
-        '404':
-          description: Email not found in the database
           content:
             application/json:
               schema:
@@ -107,8 +116,19 @@ paths:
                 properties:
                   message:
                     type: string
+                    example: Operation success. Email sent to the user.
+        '404':
+          description: Email not found in the database.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Email not found.
         '500':
-          description: Internal server error
+          description: Internal server error.
           content:
             application/json:
               schema:
@@ -151,6 +171,7 @@ paths:
                   properties:
                     message:
                       type: string
+                      example: Password updated successfully.
           '400':
             description: Password rejected. Must be at least 8 characters long.
             content:
@@ -160,6 +181,7 @@ paths:
                   properties:
                     message:
                       type: string
+                      example: Password must be more than 8 character length.
           '403':
             description: Reset token is incorrect
             content:
@@ -169,6 +191,7 @@ paths:
                   properties:
                     message:
                       type: string
+                      example: Reset token is incorrect.
           '500':
             description: Internal server error
             content:
@@ -361,38 +384,46 @@ paths:
     get:
       tags:
       - Admin
-      summary: Get all registered account
+      summary: Retrieve all registered account
       description: ''
       security:
         - access_token: []
       parameters:
         - in: header
-          name: refresh_token
+          name: access_token
           schema:
             type: string
       responses:
         '200':
-          description: Success retrieve account list
+          description: Success retrieve account list.
           content:
             application/json:
               schema:
                 type: object
                 properties:
-                  id:
-                    type: string
-                  first_name:
-                    type: string
-                  last_name:
-                    type: string
-                  email:
-                    type: string
-                    format: email
-                  status:
-                    type: string
-                    enum: [pending, approved, rejected]
-                  CreatedAt:
-                    type: string
-                    format: date
+                  message:
+                      type: string
+                      example: Success retrieve account list.
+                  results:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                        first_name:
+                          type: string
+                        last_name:
+                          type: string
+                        email:
+                          type: string
+                          format: email
+                        status:
+                          type: string
+                          enum: [pending, approved, rejected]
+                        CreatedAt:
+                          type: string
+                          format: date
         '401':
           description: Authentication error
           content:
@@ -403,7 +434,7 @@ paths:
                   message:
                     type: string
         '403':
-          description: Forbidden error. Access token invalid or user don't have admin role
+          description: Forbidden access. Access token invalid or user don't have admin role.
           content:
             application/json:
               schema:
@@ -411,6 +442,7 @@ paths:
                 properties:
                   message:
                     type: string
+                    example: This user doesn't have admin role.
         '500':
           description: Internal server error
           content:

@@ -7,7 +7,7 @@ exports.list_approval_account = async (req, res) => {
   }
   try {
       // Get account list
-      const accounts = await Account.aggregate([
+      const results = await Account.aggregate([
         {
           "$match": { isAdmin: false }
         },
@@ -28,8 +28,11 @@ exports.list_approval_account = async (req, res) => {
         }
       ]);
       // send response
-      res.json(accounts);
+      return res.status(200).json({
+        message: 'Success retrieve account list',
+        results,
+      });
   } catch (error) {
-      res.status(404).json({message: error.message});
+      next(error);
   }
 };
