@@ -274,6 +274,8 @@ paths:
         - Attendance
       summary: Get all attendances of all user in monthly period. ADMIN ONLY.
       description: ''
+      security:
+        - access_token: []
       parameters:
         - in: query
           name: year
@@ -363,6 +365,8 @@ paths:
         - Attendance
       summary: Get all attendances by user id in monthly period.
       description: ''
+      security:
+        - access_token: []
       parameters:
         - in: path
           name: userId # Note the name is the same as in the path
@@ -553,6 +557,8 @@ paths:
         - Attendance
       summary: Get user's availability to check in and check out. Also get last attendance record time and location.
       description: ''
+      security:
+        - access_token: []
       parameters:
         - in: path
           name: userId # Note the name is the same as in the path
@@ -639,6 +645,8 @@ paths:
         - Attendance
       summary: Check in with current time and location
       description: ''
+      security:
+        - access_token: []
       parameters:
         - in: path
           name: userId # Note the name is the same as in the path
@@ -707,6 +715,8 @@ paths:
         - Attendance
       summary: Check out with current time and location
       description: ''
+      security:
+        - access_token: []
       parameters:
         - in: path
           name: userId # Note the name is the same as in the path
