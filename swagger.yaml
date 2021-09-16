@@ -104,6 +104,96 @@ paths:
                     type: string
                   status:
                     type: string
+  /attendances:
+    get:
+      tags:
+      - Attendance
+      summary: Get all attendances of all user in monthly period. ADMIN ONLY
+      description: ''
+      parameters:
+        - in: query
+          name: year
+          schema:
+            type: integer
+          description: Year for filtering attendances. If omitted, system will use current year.
+        - in: query
+          name: month
+          schema:
+            type: integer
+          description: Month for filtering attendances. Use number from 1 to 12. If omitted, system will use current month
+      responses:
+        '400':
+          description: Bad Request. Request query parameters did not pass validation.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  errors:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        value:
+                          type: string
+                        msg:
+                          type: string
+                        param:
+                          type: string
+                        location:
+                          type: string
+        '403':
+          description: Forbidden. Current user don't have admin privilege
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+        '200':
+          description: OK. Attendances of all users retrieved successfully
+          content:
+            application/json:
+                schema:
+                  type: object
+                  properties:
+                    message:
+                      type: string
+                    results:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          first_name:
+                            type: string
+                          last_name:
+                            type: string
+                          email:
+                            type: string
+                          in_time:
+                            type: string
+                            format: date-time
+                          in_location:
+                            type: object
+                            properties:
+                              lat:
+                                type: number
+                              long:
+                                type: number
+                          out_time:
+                            type: string
+                            format: date-time
+                          out_location:
+                            type: object
+                            properties:
+                              lat:
+                                type: number
+                              long:
+                                type: number
+            
 # components:
 #   securitySchemes:
 #     access_token: # arbitrary name for the security scheme
