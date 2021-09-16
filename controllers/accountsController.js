@@ -109,7 +109,7 @@ exports.forget_password = async(req, res) => {
     });
 
     // send mail with defined transport object
-    transporter.sendMail(
+    await transporter.sendMail(
       {
         from: '"Attendance App Glints-IPE1" <glintsipe1@gmail.com>', // sender address
         to: req.body.email, // list of receivers
@@ -122,18 +122,11 @@ exports.forget_password = async(req, res) => {
         <p></p>
         <p>Attendance App - Glints IPE 1</p>
         `, // html body
-      },
-      (error, info) => {
-        // Check errors
-        if (error) {
-          return res.sendStatus(500);
-        }
-        // Send response
-        return res.sendStatus(200);
-      },
+      }
     );
+    return res.status(200).json({message: "Operation success. Email sent to the user."});
   } catch (error){
-    res.status(400).json({message: error.message});
+    next(error);
   }
 }
 

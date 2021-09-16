@@ -18,6 +18,9 @@ const attendancesRouter = require('./routes/attendances');
 const authenticateAccessToken = require('./middleware/authenticateAccessToken');
 const adminRouter = require('./routes/admin');
 
+// Importing swagger file
+const swaggerDocument = YAML.load('./swagger.yaml');
+
 // Initializing mongoDB
 require('./configs/database');
 
