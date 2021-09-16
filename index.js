@@ -18,6 +18,8 @@ const attendancesRouter = require('./routes/attendances');
 const authenticateAccessToken = require('./middleware/authenticateAccessToken');
 const adminRouter = require('./routes/admin');
 
+// Importing swagger file
+const swaggerDocument = YAML.load('./swagger.yaml');
 // Initializing mongoDB
 require('./configs/database');
 
@@ -45,7 +47,7 @@ app.get('/test-auth', authenticateAccessToken);
 // error handler
 app.use(function (err, req, res, next) {
   // render the error page
-  res.status(err.status || 500).json({ message: err.message });
+  return res.status(err.status || 500).json({ message: err.message });
 });
 
 // Get port from environment variable or use 3000 on development
