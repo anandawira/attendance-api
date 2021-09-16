@@ -1,5 +1,6 @@
 const jwt = require('jsonwebtoken');
 const Account = require('../models/account');
+const { getAsync, setexAsync } = require('../configs/redis-client');
 
 module.exports = [
   // Authentication using access token
@@ -16,9 +17,21 @@ module.exports = [
         .json({ message: `'Authorization' header not found.` });
     }
 
+    // Check cached data
+    console.time('using cache');
+    const cachedAccount = await getAsync(`auth:${accessToken}`);
+    console.timeEnd('using cache');
+    if (cachedAccount) {
+      req.account = JSON.parse(cachedAccount);
+      console.log('use cache', cachedAccount);
+      return next();
+    }
+
     try {
+      console.time('using jwt');
       // Verify access token
       const account = jwt.verify(accessToken, process.env.ACCESS_TOKEN_SECRET);
+      console.timeEnd('using jwt');
 
       // Destructure account data from account object
       const { id, isAdmin } = account;
@@ -27,7 +40,16 @@ module.exports = [
       req.account = { id, isAdmin };
 
       // Continue to next middleware
-      return next();
+      next();
+
+      // Save account data to cache
+      await setexAsync(
+        `auth:${accessToken}`,
+        60 * 30,
+        JSON.stringify(req.account)
+      );
+
+      return;
     } catch (err) {
       // Check if error is because the access token is expired
       if (!err.expiredAt) {
