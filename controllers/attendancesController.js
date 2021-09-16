@@ -254,8 +254,7 @@ exports.check_in_attendance_by_user_id = [
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       return res.status(400).json({
-        message:
-          'Request query parameters did not pass the validation process.',
+        message: 'Request body fields did not pass the validation process.',
         errors: errors.array(),
       });
     }
