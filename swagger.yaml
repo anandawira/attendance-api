@@ -14,7 +14,171 @@ tags:
     description: Operations related to user accounts
   - name: Attendance
     description: Operations related to attendance records
+  - name : Admin
+    description: Operation related to admin authority
 paths:
+  /accounts/register:
+    post:
+      tags:
+        - Account
+      summary: Register a new user to the server
+      description: ''
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                first_name:
+                  type: string
+                last_name:
+                  type: string
+                email:
+                  type: string
+                  format: email
+                password:
+                  type: string
+                  format: password
+              required:
+                - first_name
+                - last_name
+                - email
+                - password
+      responses:
+        '201':
+          description: User registered to the application successfully
+        '400':
+          description: Bad Request. One of form data did NOT meet the requirement.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  errors:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        value:
+                          type: string
+                        msg:
+                          type: string
+                        param:
+                          type: string
+                        location:
+                          type: string
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+
+  /accounts/forget-password:
+    post:
+      tags:
+        - Account
+      summary: Request server to send link to reset password to user's email.
+      description: ''
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+              required:
+                - email
+      responses:
+        '200':
+          description: Operation success. Email sent to the user.
+        '404':
+          description: Email not found in the database
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+
+  /accounts/reset-password/{resetToken}:
+      post:
+        tags:
+          - Account
+        summary: Change user's password
+        description: ''
+        parameters:
+          - in: path
+            name: resetToken # Note the name is the same as in the path
+            required: true
+            schema:
+              type: string
+            description: request token from the email
+        requestBody:
+          required: true
+          content:
+            application/x-www-form-urlencoded:
+              schema:
+                type: object
+                properties:
+                  password:
+                    type: string
+                required:
+                  - password
+        responses:
+          '200':
+            description: Password changed successfully
+            content:
+              application/json:
+                schema:
+                  type: object
+                  properties:
+                    message:
+                      type: string
+          '400':
+            description: Password rejected. Must be at least 8 characters long.
+            content:
+              application/json:
+                schema:
+                  type: object
+                  properties:
+                    message:
+                      type: string
+          '403':
+            description: Reset token is incorrect
+            content:
+              application/json:
+                schema:
+                  type: object
+                  properties:
+                    message:
+                      type: string
+          '500':
+            description: Internal server error
+            content:
+              application/json:
+                schema:
+                  type: object
+                  properties:
+                    message:
+                      type: string
+
   /accounts/auth:
     post:
       tags:
@@ -219,6 +383,44 @@ paths:
       responses:
         '400':
           description: Bad Request. Request query parameters or path did not pass validation.
+  /admin/accounts:
+    get:
+      tags:
+      - Admin
+      summary: Get all registered account
+      description: ''
+      security:
+        - access_token: []
+      parameters:
+        - in: header
+          name: refresh_token
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Success retrieve account list
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                  first_name:
+                    type: string
+                  last_name:
+                    type: string
+                  email:
+                    type: string
+                    format: email
+                  status:
+                    type: string
+                    enum: [pending, approved, rejected]
+                  CreatedAt:
+                    type: string
+                    format: date
+        '401':
+          description: Authentication error
           content:
             application/json:
               schema:
@@ -239,19 +441,53 @@ paths:
                           type: string
                         location:
                           type: string
-        '403':
-          description: Forbidden. Current account does not have access to the requested user id.
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  message:
-                    type: string
-        '200':
-          description: OK. Attendance of requested user retrieved successfully.
-          content:
-            application/json:
+          '403':
+            description: Forbidden error. Access token invalid or user don't have admin role
+            content:
+              application/json:
+                schema:
+                  type: object
+                  properties:
+                    message:
+                      type: string
+          '200':
+            description: OK. Attendance of requested user retrieved successfully.
+            content:
+              application/json:
+                  schema:
+                    type: object
+                    properties:
+                      message:
+                        type: string
+                      results:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            in_time:
+                              type: string
+                              format: date-time
+                            in_location:
+                              type: object
+                              properties:
+                                lat:
+                                  type: number
+                                long:
+                                  type: number
+                            out_time:
+                              type: string
+                              format: date-time
+                            out_location:
+                              type: object
+                              properties:
+                                lat:
+                                  type: number
+                                long:
+                                  type: number
+          '500':
+            description: Internal server error
+            content:
+              application/json:
                 schema:
                   type: object
                   properties:
