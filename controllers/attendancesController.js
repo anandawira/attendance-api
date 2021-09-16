@@ -1,7 +1,8 @@
 const Attendance = require('../models/attendance');
 const Account = require('../models/account');
 const { DateTime } = require('luxon');
-const { query, param, validationResult } = require('express-validator');
+const { query, param, validationResult, body } = require('express-validator');
+const { getDistance } = require('geolib');
 
 // Get all attendance of all user in a monthly period. Admin only.
 exports.get_attendances_of_all_users = [
@@ -37,8 +38,8 @@ exports.get_attendances_of_all_users = [
     const now = DateTime.now().setZone('Asia/Jakarta');
 
     // Get year and month from query parameters with default current year and month
-    const year = parseInt(req.query.year ?? now.year);
-    const month = parseInt(req.query.month ?? now.month);
+    const year = parseInt(req.query.year || now.year);
+    const month = parseInt(req.query.month || now.month);
 
     // Generating startDate and endDate for mongoDB querying
     const startDate = DateTime.fromObject({ year: year, month: month }).setZone(
@@ -137,8 +138,8 @@ exports.get_attendances_by_user_id = [
     const now = DateTime.now().setZone('Asia/Jakarta');
 
     // Get year and month from query parameters with default current year and month
-    const year = parseInt(req.query.year ?? now.year);
-    const month = parseInt(req.query.month ?? now.month);
+    const year = parseInt(req.query.year || now.year);
+    const month = parseInt(req.query.month || now.month);
 
     // Generating startDate and endDate for mongoDB querying
     const startDate = DateTime.fromObject({ year: year, month: month }).setZone(
@@ -178,6 +179,131 @@ exports.get_attendances_by_user_id = [
       return res.status(200).json({
         message: 'Attendance of requested user retrieved successfully.',
         results,
+      });
+    } catch (err) {
+      return next(err);
+    }
+  },
+];
+
+exports.get_user_today_attendance_status = [
+  param('userId')
+    .isMongoId()
+    .withMessage(`'user id is invalid`)
+    .bail()
+    .custom(async (id) => {
+      const isAccountExist = await Account.exists({ _id: id });
+      if (!isAccountExist) {
+        throw new Error();
+      }
+    })
+    .withMessage('user id is not registered in the system'),
+  async (req, res, next) => {
+    // Check validation result
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({
+        message:
+          'Request query parameters did not pass the validation process.',
+        errors: errors.array(),
+      });
+    }
+
+    // Check if current account match with requested user id in query params
+    if (req.account.id !== req.params.userId) {
+      return res.status(403).json({
+        message:
+          'Current account does not have access to the requested user id.',
+      });
+    }
+
+    try {
+      const userStatus = await Attendance.findByUserIdAndGetStatus(
+        req.account.id
+      );
+
+      return res.status(200).json({
+        message: 'User attendance status retrieved successfully.',
+        data: userStatus,
+      });
+    } catch (err) {
+      return next(err);
+    }
+  },
+];
+
+exports.check_in_attendance_by_user_id = [
+  body('lat')
+    .exists()
+    .withMessage(`Required field 'lat' not found in request body`)
+    .bail()
+    .isFloat({ min: -90, max: 90 })
+    .withMessage(`field 'lat' value must be a float number between -90 and 90`)
+    .toFloat(),
+  body('long')
+    .exists()
+    .withMessage(`Required field 'long' not found in request body`)
+    .bail()
+    .isFloat({ min: -180, max: 180 })
+    .withMessage(
+      `field 'long' value must be a float number between -180 and 180`
+    )
+    .toFloat(),
+  async (req, res, next) => {
+    // Check validation result
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({
+        message: 'Request body fields did not pass the validation process.',
+        errors: errors.array(),
+      });
+    }
+
+    // Check if current account match with requested user id in query params
+    if (req.account.id !== req.params.userId) {
+      return res.status(403).json({
+        message:
+          'Current account does not have access to the requested user id.',
+      });
+    }
+
+    try {
+      // Get user status
+      const userStatus = await Attendance.findByUserIdAndGetStatus(
+        req.account.id
+      );
+
+      // Check if user can check in
+      if (!userStatus.canCheckIn) {
+        return res
+          .status(403)
+          .json({ message: 'Cannot check in this user.', data: userStatus });
+      }
+
+      // Calculate distance between user and the office
+      const distance = getDistance(
+        { latitude: req.body.lat, longitude: req.body.long },
+        { latitude: -6.175, longitude: 106.8286 } // HARD CODED
+      );
+
+      // Check if user location is inside 100 meters radius
+      if (distance > 100) {
+        return res.status(400).json({
+          message:
+            'Location rejected. Must be inside 100 meters radius from the office',
+        });
+      }
+
+      const attendanceObject = new Attendance({
+        account: req.account.id,
+        in_time: new Date(),
+        in_location: { lat: req.body.lat, long: req.body.long },
+      });
+
+      await attendanceObject.save();
+
+      return res.status(201).json({
+        message: `Check in success. Time and location saved in the database.`,
       });
     } catch (err) {
       return next(err);

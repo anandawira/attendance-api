@@ -20,6 +20,7 @@
     "express": "^4.17.1",
     "express-rate-limit": "^5.3.0",
     "express-validator": "^6.12.1",
+    "geolib": "^3.3.1",
     "helmet": "^4.6.0",
     "jsonwebtoken": "^8.5.1",
     "luxon": "^2.0.2",

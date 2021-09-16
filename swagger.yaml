@@ -493,6 +493,214 @@ paths:
                   properties:
                     message:
                       type: string
+                    results:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          in_time:
+                            type: string
+                            format: date-time
+                          in_location:
+                            type: object
+                            properties:
+                              lat:
+                                type: number
+                              long:
+                                type: number
+                          out_time:
+                            type: string
+                            format: date-time
+                          out_location:
+                            type: object
+                            properties:
+                              lat:
+                                type: number
+                              long:
+                                type: number
+  /attendances/{userId}/status:
+    get:
+      tags:
+      - Attendance
+      summary: Get user's availability to check in and check out. Also get last attendance record time and location.
+      description: ''
+      parameters:
+        - in: path
+          name: userId # Note the name is the same as in the path
+          required: true
+          schema:
+            type: string
+          description: user / account id
+      responses:
+        '400':
+          description: Bad Request. Request query parameters did not pass the validation process.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  errors:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        value:
+                          type: string
+                        msg:
+                          type: string
+                        param:
+                          type: string
+                        location:
+                          type: string
+        '403':
+          description: Forbidden. Current account does not have access to the requested user id.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string  
+        '200':
+          description: OK. User attendance status retrieved successfully.
+          content:
+            application/json:
+                schema:
+                  type: object
+                  properties:
+                    message:
+                      type: string
+                    data:
+                      type: object
+                      properties:
+                        canCheckIn:
+                          type: boolean
+                        canCheckOut:
+                          type: boolean
+                        last_record:
+                          type: object
+                          properties:
+                            in_time:
+                              type: string
+                              format: date-time
+                            in_location:
+                              type: object
+                              properties:
+                                lat:
+                                  type: number
+                                long:
+                                  type: number
+                            out_time:
+                              type: string
+                              format: date-time
+                            out_location:
+                              type: object
+                              properties:
+                                lat:
+                                  type: number
+                                long:
+                                  type: number
+  # /attendances/{userId}/in:
+  #   post:
+  #     tags:
+  #     - Attendance
+  #     summary: Check in with current time and location
+  #     description: ''
+  #     parameters:
+  #       - in: path
+  #         name: userId # Note the name is the same as in the path
+  #         required: true
+  #         schema:
+  #           type: string
+  #         description: user / account id
+  #     requestBody:
+  #       required: true
+  #       content:
+  #         application/x-www-form-urlencoded:
+  #           schema:
+  #             type: object
+  #             properties:
+  #               lat:
+  #                 type: number
+  #               long:
+  #                 type: number
+  #             required:
+  #               - lat
+  #               - long
+  #     responses:
+  #       '400':
+  #           description: Bad Request. Request body fields did not pass the validation process.
+  #           content:
+  #             application/json:
+  #               schema:
+  #                 type: object
+  #                 properties:
+  #                   message:
+  #                     type: string
+  #                   errors:
+  #                     type: array
+  #                     items:
+  #                       type: object
+  #                       properties:
+  #                         value:
+  #                           type: string
+  #                         msg:
+  #                           type: string
+  #                         param:
+  #                           type: string
+  #                         location:
+  #                           type: string
+  #       # '403':
+  #       #     description: Forbidden. Current account does not have access to the requested user id.
+  #       #     content:
+  #       #       application/json:
+  #       #         schema:
+  #       #           type: object
+  #       #           properties:
+  #       #             message:
+  #       #               type: string 
+  #       '403':
+  #           description: Forbidden. Cannot check in this user.
+  #           content:
+  #             application/json:
+  #                 schema:
+  #                   type: object
+  #                   properties:
+  #                     message:
+  #                       type: string
+  #                     data:
+  #                       type: object
+  #                       properties:
+  #                         canCheckIn:
+  #                           type: boolean
+  #                         canCheckOut:
+  #                           type: boolean
+  #                         last_record:
+  #                           type: object
+  #                           properties:
+  #                             in_time:
+  #                               type: string
+  #                               format: date-time
+  #                             in_location:
+  #                               type: object
+  #                               properties:
+  #                                 lat:
+  #                                   type: number
+  #                                 long:
+  #                                   type: number
+  #                             out_time:
+  #                               type: string
+  #                               format: date-time
+  #                             out_location:
+  #                               type: object
+  #                               properties:
+  #                                 lat:
+  #                                   type: number
+  #                                 long:
+  #                                   type: number
+      
             
 # components:
 #   securitySchemes:
