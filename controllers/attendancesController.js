@@ -3,7 +3,12 @@ const Account = require('../models/account');
 const { DateTime } = require('luxon');
 const { query, param, validationResult, body } = require('express-validator');
 const { getDistance } = require('geolib');
-const { client, getAsync, setexAsync } = require('../configs/redis-client');
+const {
+  client,
+  getAsync,
+  setexAsync,
+  delAsync,
+} = require('../configs/redis-client');
 
 // Get all attendance of all user in a monthly period. Admin only.
 exports.get_attendances_of_all_users = [
@@ -97,10 +102,10 @@ exports.get_attendances_of_all_users = [
         results,
       });
 
-      // Save to cache for 1 minute. TODO: extend duration
+      // Save to cache for 1 hour and will be deleted early when any user checked out.
       await setexAsync(
         `Attendances:all:${year}:${month}`,
-        60,
+        1 * 60 * 60,
         JSON.stringify(results)
       );
     } catch (err) {
@@ -388,6 +393,7 @@ exports.check_out_attendance_by_user_id = [
         });
       }
 
+      // insert out_time and out_location to attendance object
       const updatedAttendance = await Attendance.findByIdAndUpdate(
         userStatus.last_record.id,
         {
@@ -398,9 +404,17 @@ exports.check_out_attendance_by_user_id = [
         }
       );
 
-      return res.status(201).json({
+      // Send response to client
+      res.status(201).json({
         message: `Check out success. Time and location saved in the database.`,
       });
+
+      // Remove cache for the month
+      const now = DateTime.now().setZone('Asia/Jakarta');
+      const { year, month } = now;
+      await delAsync(`Attendances:all:${year}:${month}`);
+
+      return;
     } catch (err) {
       return next(err);
     }
