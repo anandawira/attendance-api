@@ -5,7 +5,6 @@ const rateLimit = require('express-rate-limit');
 const accountsController = require("../controllers/accountsController");
 const forgetLimit = rateLimit({ windowMs: 1 * 60 * 60 * 1000, max: 5 });
 
-
 // [POST] /v1/accounts/register
 // Register a new account to the system 
 router.post("/register", accountsController.register_new_account);

@@ -16,9 +16,7 @@ const YAML = require('yamljs');
 const accountsRouter = require('./routes/accounts');
 const attendancesRouter = require('./routes/attendances');
 const authenticateAccessToken = require('./middleware/authenticateAccessToken');
-
-// Importing swagger file
-const swaggerDocument = YAML.load('./swagger.yaml');
+const adminRouter = require('./routes/admin');
 
 // Initializing mongoDB
 require('./configs/database');
@@ -39,6 +37,7 @@ app.use(cors());
 
 // Routes
 app.use('/v1/accounts', accountsRouter);
+app.use('/v1/admin', adminRouter);
 app.use('/v1/attendances', attendancesRouter);
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 app.get('/test-auth', authenticateAccessToken);
