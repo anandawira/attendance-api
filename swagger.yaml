@@ -14,7 +14,7 @@ tags:
     description: Operations related to user accounts
   - name: Attendance
     description: Operations related to attendance records
-  - name : Admin
+  - name: Admin
     description: Operation related to admin authority
 paths:
   /accounts/register:
@@ -138,75 +138,72 @@ paths:
                     type: string
 
   /accounts/reset-password/{resetToken}:
-      post:
-        tags:
-          - Account
-        summary: Change user's password
-        description: ''
-        parameters:
-          - in: path
-            name: resetToken # Note the name is the same as in the path
-            required: true
-            schema:
-              type: string
-            description: request token from the email
-        requestBody:
+    post:
+      tags:
+        - Account
+      summary: Change user's password
+      description: ''
+      parameters:
+        - in: path
+          name: resetToken # Note the name is the same as in the path
           required: true
+          schema:
+            type: string
+          description: request token from the email
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                password:
+                  type: string
+              required:
+                - password
+      responses:
+        '200':
+          description: Password changed successfully
           content:
-            application/x-www-form-urlencoded:
+            application/json:
               schema:
                 type: object
                 properties:
-                  password:
+                  message:
                     type: string
-                required:
-                  - password
-        responses:
-          '200':
-            description: Password changed successfully
-            content:
-              application/json:
-                schema:
-                  type: object
-                  properties:
-                    message:
-                      type: string
-                      example: Password updated successfully.
-          '400':
-            description: Password rejected. Must be at least 8 characters long.
-            content:
-              application/json:
-                schema:
-                  type: object
-                  properties:
-                    message:
-                      type: string
-                      example: Password must be more than 8 character length.
-          '403':
-            description: Reset token is incorrect
-            content:
-              application/json:
-                schema:
-                  type: object
-                  properties:
-                    message:
-                      type: string
-                      example: Reset token is incorrect.
-          '500':
-            description: Internal server error
-            content:
-              application/json:
-                schema:
-                  type: object
-                  properties:
-                    message:
-                      type: string
+        '400':
+          description: Password rejected. Must be at least 8 characters long.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+        '403':
+          description: Reset token is incorrect
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
 
   /accounts/auth:
     post:
       tags:
-      - Account
-      summary: Get user data and tokens by providing user's credentials in the request body
+        - Account
+      summary: Get user data and tokens by providing user's credentials in the request body.
       description: ''
       requestBody:
         required: true
@@ -229,26 +226,26 @@ paths:
           description: OK. User authentication success.
           content:
             application/json:
-                schema:
-                  type: object
-                  properties:
-                    message:
-                      type: string
-                    data:
-                      type: object
-                      properties:
-                        id:
-                          type: string
-                        first_name:
-                          type: string
-                        last_name:
-                          type: string
-                        isAdmin:
-                          type: boolean
-                        access_token:
-                          type: string
-                        refresh_token:
-                          type: string
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  data:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                      first_name:
+                        type: string
+                      last_name:
+                        type: string
+                      isAdmin:
+                        type: boolean
+                      access_token:
+                        type: string
+                      refresh_token:
+                        type: string
         '400':
           description: Bad Request. Request body did not pass validation.
           content:
@@ -272,7 +269,7 @@ paths:
                         location:
                           type: string
         '401':
-          description: Unauthorized. Email or password is incorrect
+          description: Unauthorized. Email or password is incorrect.
           content:
             application/json:
               schema:
@@ -281,7 +278,7 @@ paths:
                   message:
                     type: string
         '403':
-          description: Forbidden. Account has not been approved by admin
+          description: Forbidden. Account has not been approved by admin.
           content:
             application/json:
               schema:
@@ -294,8 +291,8 @@ paths:
   /attendances:
     get:
       tags:
-      - Attendance
-      summary: Get all attendances of all user in monthly period. ADMIN ONLY
+        - Attendance
+      summary: Get all attendances of all user in monthly period. ADMIN ONLY.
       description: ''
       parameters:
         - in: query
@@ -332,7 +329,7 @@ paths:
                         location:
                           type: string
         '403':
-          description: Forbidden. Current user don't have admin privilege
+          description: Forbidden. Current user don't have admin privilege.
           content:
             application/json:
               schema:
@@ -341,50 +338,139 @@ paths:
                   message:
                     type: string
         '200':
-          description: OK. Attendances of all users retrieved successfully
+          description: OK. Attendances of all users retrieved successfully.
           content:
             application/json:
-                schema:
-                  type: object
-                  properties:
-                    message:
-                      type: string
-                    results:
-                      type: array
-                      items:
-                        type: object
-                        properties:
-                          first_name:
-                            type: string
-                          last_name:
-                            type: string
-                          email:
-                            type: string
-                          in_time:
-                            type: string
-                            format: date-time
-                          in_location:
-                            type: object
-                            properties:
-                              lat:
-                                type: number
-                              long:
-                                type: number
-                          out_time:
-                            type: string
-                            format: date-time
-                          out_location:
-                            type: object
-                            properties:
-                              lat:
-                                type: number
-                              long:
-                                type: number
-  /admin:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  results:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        first_name:
+                          type: string
+                        last_name:
+                          type: string
+                        email:
+                          type: string
+                        in_time:
+                          type: string
+                          format: date-time
+                        in_location:
+                          type: object
+                          properties:
+                            lat:
+                              type: number
+                            long:
+                              type: number
+                        out_time:
+                          type: string
+                          format: date-time
+                        out_location:
+                          type: object
+                          properties:
+                            lat:
+                              type: number
+                            long:
+                              type: number
+  /attendances/{userId}:
     get:
       tags:
-      - Admin
-      summary: Retrieve all registered account
+        - Attendance
+      summary: Get all attendances by user id in monthly period.
+      description: ''
+      parameters:
+        - in: path
+          name: userId # Note the name is the same as in the path
+          required: true
+          schema:
+            type: string
+          description: user / account id
+        - in: query
+          name: year
+          schema:
+            type: integer
+          description: Year for filtering attendances. If omitted, system will use current year.
+        - in: query
+          name: month
+          schema:
+            type: integer
+          description: Month for filtering attendances. Use number from 1 to 12. If omitted, system will use current month
+      responses:
+        '200':
+          description: OK. Attendance of requested user retrieved successfully.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  results:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        in_time:
+                          type: string
+                          format: date-time
+                        in_location:
+                          type: object
+                          properties:
+                            lat:
+                              type: number
+                            long:
+                              type: number
+                        out_time:
+                          type: string
+                          format: date-time
+                        out_location:
+                          type: object
+                          properties:
+                            lat:
+                              type: number
+                            long:
+                              type: number
+        '400':
+          description: Bad Request. Request query parameters did not pass the validation process.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  errors:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        value:
+                          type: string
+                        msg:
+                          type: string
+                        param:
+                          type: string
+                        location:
+                          type: string
+        '403':
+          description: Forbidden. Current account does not have access to the requested user id.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+  /admin/accounts:
+    get:
+      tags:
+        - Admin
+      summary: Get all registered account
       description: ''
       security:
         - access_token: []
@@ -519,6 +605,19 @@ paths:
                 properties:
                   message:
                     type: string
+                  errors:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        value:
+                          type: string
+                        msg:
+                          type: string
+                        param:
+                          type: string
+                        location:
+                          type: string
         '403':
           description: Forbidden access.
           content:
@@ -548,10 +647,257 @@ paths:
                 properties:
                   message:
                     type: string
-            
-# components:
-#   securitySchemes:
-#     access_token: # arbitrary name for the security scheme
-#       type: http
-#       scheme: bearer
-#       bearerFormat: JWT
+                  results:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        in_time:
+                          type: string
+                          format: date-time
+                        in_location:
+                          type: object
+                          properties:
+                            lat:
+                              type: number
+                            long:
+                              type: number
+                        out_time:
+                          type: string
+                          format: date-time
+                        out_location:
+                          type: object
+                          properties:
+                            lat:
+                              type: number
+                            long:
+                              type: number
+  /attendances/{userId}/status:
+    get:
+      tags:
+        - Attendance
+      summary: Get user's availability to check in and check out. Also get last attendance record time and location.
+      description: ''
+      parameters:
+        - in: path
+          name: userId # Note the name is the same as in the path
+          required: true
+          schema:
+            type: string
+          description: user / account id
+      responses:
+        '400':
+          description: Bad Request. Request query parameters did not pass the validation process.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  errors:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        value:
+                          type: string
+                        msg:
+                          type: string
+                        param:
+                          type: string
+                        location:
+                          type: string
+        '403':
+          description: Forbidden. Current account does not have access to the requested user id.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+        '200':
+          description: OK. User attendance status retrieved successfully.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  data:
+                    type: object
+                    properties:
+                      canCheckIn:
+                        type: boolean
+                      canCheckOut:
+                        type: boolean
+                      last_record:
+                        type: object
+                        properties:
+                          id:
+                            type: string
+                          in_time:
+                            type: string
+                            format: date-time
+                          in_location:
+                            type: object
+                            properties:
+                              lat:
+                                type: number
+                              long:
+                                type: number
+                          out_time:
+                            type: string
+                            format: date-time
+                          out_location:
+                            type: object
+                            properties:
+                              lat:
+                                type: number
+                              long:
+                                type: number
+  /attendances/{userId}/in:
+    post:
+      tags:
+        - Attendance
+      summary: Check in with current time and location
+      description: ''
+      parameters:
+        - in: path
+          name: userId # Note the name is the same as in the path
+          required: true
+          schema:
+            type: string
+          description: user / account id
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                lat:
+                  type: number
+                long:
+                  type: number
+              required:
+                - lat
+                - long
+      responses:
+        '400':
+          description: Bad Request. Request body fields did not pass the validation process.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  errors:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        value:
+                          type: string
+                        msg:
+                          type: string
+                        param:
+                          type: string
+                        location:
+                          type: string
+        '403':
+          description: Forbidden. Cannot check in with this user
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+        '201':
+          description: OK. Check in success. Time and location saved in the database.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+  /attendances/{userId}/out:
+    post:
+      tags:
+        - Attendance
+      summary: Check out with current time and location
+      description: ''
+      parameters:
+        - in: path
+          name: userId # Note the name is the same as in the path
+          required: true
+          schema:
+            type: string
+          description: user / account id
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                lat:
+                  type: number
+                long:
+                  type: number
+              required:
+                - lat
+                - long
+      responses:
+        '400':
+          description: Bad Request. Request body fields did not pass the validation process.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  errors:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        value:
+                          type: string
+                        msg:
+                          type: string
+                        param:
+                          type: string
+                        location:
+                          type: string
+        '403':
+          description: Forbidden. Cannot check out with this user
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+        '201':
+          description: OK. Check in success. Time and location saved in the database.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+
+components:
+  securitySchemes:
+    access_token: # arbitrary name for the security scheme
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
