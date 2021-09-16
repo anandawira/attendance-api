@@ -1,9 +1,10 @@
 const Attendance = require('../models/attendance');
+const Account = require('../models/account');
 const { DateTime } = require('luxon');
-const { query, validationResult } = require('express-validator');
+const { query, param, validationResult } = require('express-validator');
 
 // Get all attendance of all user in a monthly period. Admin only.
-exports.get_all_attendances = [
+exports.get_attendances_of_all_users = [
   query('year')
     .optional()
     .isInt({ min: 1, max: 10000 })
@@ -32,7 +33,6 @@ exports.get_all_attendances = [
       });
     }
 
-    console.time('Creating date range objects');
     // Create current date object
     const now = DateTime.now().setZone('Asia/Jakarta');
 
@@ -49,10 +49,9 @@ exports.get_all_attendances = [
         ? { year: year, month: month + 1 }
         : { year: year + 1, month: 1 }
     ).setZone('Asia/Jakarta');
-    console.timeEnd('Creating date range objects');
+
     try {
-      console.time('Retrieve from database');
-      // Retrieve all attendances in period
+      // Retrieve attendances in period
       const attendances = await Attendance.find(
         {
           in_time: { $gte: startDate, $lt: endDate },
@@ -63,9 +62,6 @@ exports.get_all_attendances = [
         .lean({ virtuals: true })
         .populate('account', 'first_name last_name email');
 
-      console.timeEnd('Retrieve from database');
-
-      console.time('Creating results object');
       // Creating result object
       const results = attendances.map((attendance) => {
         const { first_name, last_name, email } = attendance.account;
@@ -83,7 +79,6 @@ exports.get_all_attendances = [
           work_duration,
         };
       });
-      console.timeEnd('Creating results object');
 
       // Send response to user
       return res.status(200).json({
@@ -92,6 +87,99 @@ exports.get_all_attendances = [
       });
     } catch (err) {
       // Pass error to error handler
+      return next(err);
+    }
+  },
+];
+
+exports.get_attendances_by_user_id = [
+  param('userId')
+    .isMongoId()
+    .withMessage(`'user id is invalid`)
+    .bail()
+    .custom(async (id) => {
+      const isAccountExist = await Account.exists({ _id: id });
+      if (!isAccountExist) {
+        throw new Error();
+      }
+    })
+    .withMessage('user id is not registered in the system'),
+  query('year')
+    .optional()
+    .isInt({ min: 1, max: 10000 })
+    .withMessage(`query parameter 'year' invalid.`),
+  query('month')
+    .optional()
+    .isInt({ min: 1, max: 12 })
+    .withMessage(
+      `query parameter 'month' is invalid. please only use number 1 to 12.`
+    ),
+  async (req, res, next) => {
+    // Check validation result
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({
+        message:
+          'Request query parameters did not pass the validation process.',
+        errors: errors.array(),
+      });
+    }
+
+    // Check if current account match with requested user id in query params
+    if (req.account.id !== req.params.userId) {
+      return res.status(403).json({
+        message:
+          'Current account does not have access to the requested user id.',
+      });
+    }
+
+    // Create current date object
+    const now = DateTime.now().setZone('Asia/Jakarta');
+
+    // Get year and month from query parameters with default current year and month
+    const year = parseInt(req.query.year ?? now.year);
+    const month = parseInt(req.query.month ?? now.month);
+
+    // Generating startDate and endDate for mongoDB querying
+    const startDate = DateTime.fromObject({ year: year, month: month }).setZone(
+      'Asia/Jakarta'
+    );
+    const endDate = DateTime.fromObject(
+      month !== 12
+        ? { year: year, month: month + 1 }
+        : { year: year + 1, month: 1 }
+    ).setZone('Asia/Jakarta');
+
+    try {
+      // Retrieve attendances by user id in period
+      const attendances = await Attendance.find(
+        {
+          in_time: { $gte: startDate, $lt: endDate },
+          account: req.account.id,
+          out_time: { $exists: true },
+        },
+        '-_id -__v -account'
+      ).lean({ virtuals: true });
+
+      // Creating result object
+      const results = attendances.map((attendance) => {
+        const { in_time, in_location, out_time, out_location, work_duration } =
+          attendance;
+
+        return {
+          in_time,
+          in_location,
+          out_time,
+          out_location,
+          work_duration,
+        };
+      });
+
+      return res.status(200).json({
+        message: 'Attendance of requested user retrieved successfully.',
+        results,
+      });
+    } catch (err) {
       return next(err);
     }
   },

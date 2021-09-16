@@ -19,7 +19,7 @@ paths:
     post:
       tags:
       - Account
-      summary: Get user data and tokens by providing user's credentials in the request body
+      summary: Get user data and tokens by providing user's credentials in the request body.
       description: ''
       requestBody:
         required: true
@@ -85,7 +85,7 @@ paths:
                         location:
                           type: string
         '401':
-          description: Unauthorized. Email or password is incorrect
+          description: Unauthorized. Email or password is incorrect.
           content:
             application/json:
               schema:
@@ -94,7 +94,7 @@ paths:
                   message:
                     type: string
         '403':
-          description: Forbidden. Account has not been approved by admin
+          description: Forbidden. Account has not been approved by admin.
           content:
             application/json:
               schema:
@@ -108,7 +108,7 @@ paths:
     get:
       tags:
       - Attendance
-      summary: Get all attendances of all user in monthly period. ADMIN ONLY
+      summary: Get all attendances of all user in monthly period. ADMIN ONLY.
       description: ''
       parameters:
         - in: query
@@ -145,7 +145,7 @@ paths:
                         location:
                           type: string
         '403':
-          description: Forbidden. Current user don't have admin privilege
+          description: Forbidden. Current user don't have admin privilege.
           content:
             application/json:
               schema:
@@ -154,7 +154,7 @@ paths:
                   message:
                     type: string
         '200':
-          description: OK. Attendances of all users retrieved successfully
+          description: OK. Attendances of all users retrieved successfully.
           content:
             application/json:
                 schema:
@@ -173,6 +173,95 @@ paths:
                             type: string
                           email:
                             type: string
+                          in_time:
+                            type: string
+                            format: date-time
+                          in_location:
+                            type: object
+                            properties:
+                              lat:
+                                type: number
+                              long:
+                                type: number
+                          out_time:
+                            type: string
+                            format: date-time
+                          out_location:
+                            type: object
+                            properties:
+                              lat:
+                                type: number
+                              long:
+                                type: number
+  /attendances/{userId}:
+    get:
+      tags:
+      - Attendance
+      summary: Get all attendances by user id in monthly period.
+      description: ''
+      parameters:
+        - in: path
+          name: userId # Note the name is the same as in the path
+          required: true
+          schema:
+            type: string
+          description: user / account id
+        - in: query
+          name: year
+          schema:
+            type: integer
+          description: Year for filtering attendances. If omitted, system will use current year.
+        - in: query
+          name: month
+          schema:
+            type: integer
+          description: Month for filtering attendances. Use number from 1 to 12. If omitted, system will use current month
+      responses:
+        '400':
+          description: Bad Request. Request query parameters or path did not pass validation.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  errors:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        value:
+                          type: string
+                        msg:
+                          type: string
+                        param:
+                          type: string
+                        location:
+                          type: string
+        '403':
+          description: Forbidden. Current account does not have access to the requested user id.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+        '200':
+          description: OK. Attendance of requested user retrieved successfully.
+          content:
+            application/json:
+                schema:
+                  type: object
+                  properties:
+                    message:
+                      type: string
+                    results:
+                      type: array
+                      items:
+                        type: object
+                        properties:
                           in_time:
                             type: string
                             format: date-time
