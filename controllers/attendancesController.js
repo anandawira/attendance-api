@@ -42,6 +42,15 @@ exports.get_attendances_of_all_users = [
     const year = parseInt(req.query.year || now.year);
     const month = parseInt(req.query.month || now.month);
 
+    // Check cache
+    const cachedResult = await getAsync(`Attendances:all:${year}:${month}`);
+    if (cachedResult) {
+      return res.status(200).json({
+        message: 'Attendances of all users retrieved successfully',
+        results: JSON.parse(cachedResult),
+      });
+    }
+
     // Generating startDate and endDate for mongoDB querying
     const startDate = DateTime.fromObject({ year: year, month: month }).setZone(
       'Asia/Jakarta'
@@ -52,15 +61,8 @@ exports.get_attendances_of_all_users = [
         : { year: year + 1, month: 1 }
     ).setZone('Asia/Jakarta');
 
-    // Check cache
-    console.time('cached');
-    client.get(`Attendances:all:${year}:${month}`, (err, data) => {
-      console.timeEnd('cached');
-    });
-
     try {
       // Retrieve attendances in period
-      console.time('database');
       const attendances = await Attendance.find(
         {
           in_time: { $gte: startDate, $lt: endDate },
@@ -89,18 +91,16 @@ exports.get_attendances_of_all_users = [
         };
       });
 
-      console.timeEnd('database');
-
       // Send response to user
       res.status(200).json({
         message: 'Attendances of all users retrieved successfully',
         results,
       });
 
-      // Save to cache for 4 hours
+      // Save to cache for 1 minute. TODO: extend duration
       await setexAsync(
         `Attendances:all:${year}:${month}`,
-        4 * 60 * 60,
+        60,
         JSON.stringify(results)
       );
     } catch (err) {
