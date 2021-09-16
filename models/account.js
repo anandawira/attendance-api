@@ -29,6 +29,13 @@ accountSchema.statics.findByIdAndChangePassword = async function (
   return await this.findByIdAndUpdate(id, { password: hashedPassword });
 };
 
+accountSchema.statics.findByIdAndChangeStatus = async function (
+  id,
+  status
+) {
+  return await this.findByIdAndUpdate(id, { status: status });
+};
+
 accountSchema.statics.isEmailExist = function (email) {
   return this.findOne({ email: email });
 };

@@ -380,7 +380,7 @@ paths:
                                 type: number
                               long:
                                 type: number
-  /admin/accounts:
+  /admin:
     get:
       tags:
       - Admin
@@ -403,7 +403,7 @@ paths:
                 properties:
                   message:
                       type: string
-                      example: Success retrieve account list.
+                      example: Account list retrieved successfully.
                   results:
                     type: array
                     items:
@@ -425,7 +425,7 @@ paths:
                           type: string
                           format: date
         '401':
-          description: Authentication error
+          description: Authentication error.
           content:
             application/json:
               schema:
@@ -433,6 +433,7 @@ paths:
                 properties:
                   message:
                     type: string
+                    example: Invalid access token.
         '403':
           description: Forbidden access. Access token invalid or user don't have admin role.
           content:
@@ -443,6 +444,101 @@ paths:
                   message:
                     type: string
                     example: This user doesn't have admin role.
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+  /admin/{id}:
+    put:
+      tags:
+      - Admin
+      summary: Update account approval
+      description: Update only to [pending, approved, rejected]
+      security:
+        - access_token: []
+      parameters:
+        - in: header
+          name: access_token
+          schema:
+            type: string
+        - in: path
+          name: id # Note the name is the same as in the path
+          required: true
+          schema:
+            type: string
+          description: account's id
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                status:
+                  type: string
+                  enum: [pending, approved, rejected]
+              required:
+                - status
+      responses:
+        '200':
+          description: Account approval updated successfully.
+          content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                message:
+                  type: string
+                  example: Account approval updated successfully.
+                status:
+                  type: string
+                  enum: [pending, approved, rejected]
+        '400':
+          description: Bad Request Body. Invalid approval status.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: array
+                    items:
+                      type: string
+                      example: Invalid approval status.
+        '401':
+          description: Authentication error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+        '403':
+          description: Forbidden access.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: This user doesn't have admin role.
+        '404':
+          description: Cannot find account.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Account not found.
         '500':
           description: Internal server error
           content:
