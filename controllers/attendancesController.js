@@ -37,8 +37,8 @@ exports.get_attendances_of_all_users = [
     const now = DateTime.now().setZone('Asia/Jakarta');
 
     // Get year and month from query parameters with default current year and month
-    const year = parseInt(req.query.year ?? now.year);
-    const month = parseInt(req.query.month ?? now.month);
+    const year = parseInt(req.query.year || now.year);
+    const month = parseInt(req.query.month || now.month);
 
     // Generating startDate and endDate for mongoDB querying
     const startDate = DateTime.fromObject({ year: year, month: month }).setZone(
@@ -137,8 +137,8 @@ exports.get_attendances_by_user_id = [
     const now = DateTime.now().setZone('Asia/Jakarta');
 
     // Get year and month from query parameters with default current year and month
-    const year = parseInt(req.query.year ?? now.year);
-    const month = parseInt(req.query.month ?? now.month);
+    const year = parseInt(req.query.year || now.year);
+    const month = parseInt(req.query.month || now.month);
 
     // Generating startDate and endDate for mongoDB querying
     const startDate = DateTime.fromObject({ year: year, month: month }).setZone(
