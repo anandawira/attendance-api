@@ -124,6 +124,7 @@ exports.forget_password = async(req, res) => {
         `, // html body
       }
     );
+    // console.log(resetToken); //delete later
     return res.status(200).json({message: "Operation success. Email sent to the user."});
   } catch (error){
     next(error);
@@ -135,9 +136,9 @@ exports.reset_password = [
   // Validate password
   body('password')
     .isLength({ min: 8 })
-    .withMessage('Password must be more than 8 character length'),
+    .withMessage('Password must be more than 8 character length.'),
   
-  async(req, res, next) => {
+  async(req, res) => {
     try {
       // Verify token
       jwt.verify(
@@ -146,7 +147,7 @@ exports.reset_password = [
         (error, account) => {
           // Check errors
           if (error) {
-            return res.status(403).json({ message: "Reset token is incorrect" });
+            return res.status(403).json({ message: "Reset token is incorrect." });
           }
           // Add account to request object
           req.account = account;
@@ -155,9 +156,9 @@ exports.reset_password = [
       // Check validation result
       const errors = validationResult(req);
       if (!errors.isEmpty()) {
-        return res.status(400).json({ message: 'Password must be more than 8 character length' });
+        return res.status(400).json({ message: 'Password must be more than 8 character length.' });
       }
-  
+
       // Hashing password
       const hashedPassword = await bcrypt.hash(req.body.password, 10);
 
@@ -165,10 +166,10 @@ exports.reset_password = [
       Account.findByIdAndChangePassword(req.account.id, hashedPassword);
 
       // Send status success
-      res.status(200).json({ message: 'Password updated successfully' });
+      return res.status(200).json({ message: 'Password updated successfully.' });
     } catch (error) {
       // Send error message
-      res.status(400).json({message: error.message});
+      next(error);
     };
   }
 ];
