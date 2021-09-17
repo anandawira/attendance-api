@@ -277,13 +277,9 @@ exports.check_in_attendance_by_user_id = [
       if (!userStatus.canCheckIn) {
         return res
           .status(403)
-<<<<<<< HEAD
-          .json({ message: 'Cannot check in this user.', data: userStatus });
-=======
           .json({
             message: 'Cannot check in this user. User already checked in today',
           });
->>>>>>> origin/ananda-checkOut
       }
 
       // Calculate distance between user and the office

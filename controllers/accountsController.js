@@ -10,32 +10,34 @@ exports.register_new_account = [
   body('first_name')
     .trim()
     .isLength({ min: 1 })
-    .withMessage('First name must be specified'),
+    .withMessage('First name must be specified.'),
   body('last_name')
     .trim()
     .isLength({ min: 1 })
-    .withMessage('Last name must be specified'),
+    .withMessage('Last name must be specified.'),
   body('email')
     .trim()
     .isEmail()
-    .withMessage('Email invalid')
+    .withMessage('Email invalid.')
     .toLowerCase()
     .custom(async (email) => {
       const account = await Account.isEmailExist(email);
       if (account) {
-        return Promise.reject('Email already in use');
+        return Promise.reject('Email already in use.');
       }
     }),
   body('password')
     .isLength({ min: 8 })
-    .withMessage('Password must be more than 8 character length'),
+    .withMessage('Password must be more than 8 character length.'),
   
-  async(req, res, next) => {
+  async(req, res) => {
     // Check validation result
     const errors = validationResult(req);
     // Return fail in validation
     if (!errors.isEmpty()) {
-      return res.status(400).json({ errors: errors.array() });
+      return res.status(400).json({ 
+        message: 'Request body did not pass the validation process.',
+        errors: errors.array() });
     }
     try {
       // Hashing password
@@ -48,13 +50,6 @@ exports.register_new_account = [
         email: req.body.email,
         password: hashedpassword
       });
-
-      // Save
-      const saveAccount = await account.save();
-
-      // Send status success
-      res.sendStatus(201);
-      // res.status(201).json(saveAccount); //delete later
 
       // Send email to Admin 
       let transporter = nodemailer.createTransport({
@@ -76,18 +71,17 @@ exports.register_new_account = [
           <p></p>
           <p>Attendance App - Glints IPE 1</p>
           `,
-        },
-        (error, info) => {
-          // Check errors
-          if (error) {
-            return res.sendStatus(500);
-          }
-          // Send response
-          return res.sendStatus(200);
-        },
+        }
       );
+
+      // Save
+      const saveAccount = await account.save();
+
+      // Send status success
+      return res.status(201).json({message:"Account register success."});
+
     } catch (error){
-      res.status(400).json({message: error.message});
+      next(error);
     }
   }
 ];
@@ -97,7 +91,7 @@ exports.forget_password = async(req, res) => {
   // Check email
   const account = await Account.isEmailExist(req.body.email);
   if(!account) return res.status(404).json({ message:"Email not found." });
-  // console.log(account) //delete later
+
   try {
     const resetToken = jwt.sign(
       { id: account.id },
@@ -115,7 +109,7 @@ exports.forget_password = async(req, res) => {
     });
 
     // send mail with defined transport object
-    transporter.sendMail(
+    await transporter.sendMail(
       {
         from: '"Attendance App Glints-IPE1" <glintsipe1@gmail.com>', // sender address
         to: req.body.email, // list of receivers
@@ -128,18 +122,12 @@ exports.forget_password = async(req, res) => {
         <p></p>
         <p>Attendance App - Glints IPE 1</p>
         `, // html body
-      },
-      (error, info) => {
-        // Check errors
-        if (error) {
-          return res.sendStatus(500);
-        }
-        // Send response
-        return res.sendStatus(200);
-      },
+      }
     );
+    // console.log(resetToken); //delete later
+    return res.status(200).json({message: "Operation success. Email sent to the user."});
   } catch (error){
-    res.status(400).json({message: error.message});
+    next(error);
   }
 }
 
@@ -148,9 +136,9 @@ exports.reset_password = [
   // Validate password
   body('password')
     .isLength({ min: 8 })
-    .withMessage('Password must be more than 8 character length'),
+    .withMessage('Password must be more than 8 character length.'),
   
-  async(req, res, next) => {
+  async(req, res) => {
     try {
       // Verify token
       jwt.verify(
@@ -159,7 +147,7 @@ exports.reset_password = [
         (error, account) => {
           // Check errors
           if (error) {
-            return res.status(403).json({ message: "Reset token is incorrect" });
+            return res.status(403).json({ message: "Reset token is incorrect." });
           }
           // Add account to request object
           req.account = account;
@@ -168,9 +156,9 @@ exports.reset_password = [
       // Check validation result
       const errors = validationResult(req);
       if (!errors.isEmpty()) {
-        return res.status(400).json({ message: 'Password must be more than 8 character length' });
+        return res.status(400).json({ message: 'Password must be more than 8 character length.' });
       }
-  
+
       // Hashing password
       const hashedPassword = await bcrypt.hash(req.body.password, 10);
 
@@ -178,10 +166,10 @@ exports.reset_password = [
       Account.findByIdAndChangePassword(req.account.id, hashedPassword);
 
       // Send status success
-      res.status(200).json({ message: 'Password updated successfully' });
+      return res.status(200).json({ message: 'Password updated successfully.' });
     } catch (error) {
       // Send error message
-      res.status(400).json({message: error.message});
+      next(error);
     };
   }
 ];

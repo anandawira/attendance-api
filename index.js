@@ -20,6 +20,7 @@ const adminRouter = require('./routes/admin');
 
 // Importing swagger file
 const swaggerDocument = YAML.load('./swagger.yaml');
+
 // Initializing mongoDB
 require('./configs/database');
 
