@@ -700,7 +700,7 @@ paths:
                 properties:
                   message:
                     type: string
-        '201':
+        '200':
           description: OK. Check in success. Time and location saved in the database.
           content:
             application/json:
@@ -770,7 +770,7 @@ paths:
                 properties:
                   message:
                     type: string
-        '201':
+        '200':
           description: OK. Check in success. Time and location saved in the database.
           content:
             application/json:

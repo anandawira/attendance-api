@@ -324,7 +324,7 @@ exports.check_in_attendance_by_user_id = [
 
       await attendanceObject.save();
 
-      return res.status(201).json({
+      return res.status(200).json({
         message: `Check in success. Time and location saved in the database.`,
       });
     } catch (err) {
@@ -405,7 +405,7 @@ exports.check_out_attendance_by_user_id = [
       );
 
       // Send response to client
-      res.status(201).json({
+      res.status(200).json({
         message: `Check out success. Time and location saved in the database.`,
       });
 
