@@ -47,7 +47,8 @@ app.get('/test-auth', authenticateAccessToken);
 // error handler
 app.use(function (err, req, res, next) {
   // render the error page
-  return res.status(err.status || 500).json({ message: err.message });
+  res.status(err.status || 500).json({ message: err.message });
+  return console.error(err.message);
 });
 
 // Get port from environment variable or use 3000 on development
