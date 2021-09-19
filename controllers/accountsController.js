@@ -19,18 +19,20 @@ exports.register_new_account = [
     .trim()
     .isEmail()
     .withMessage('Email invalid')
+    .bail()
     .toLowerCase()
     .custom(async (email) => {
-      const account = await Account.isEmailExist(email);
-      if (account) {
-        return Promise.reject('Email already in use');
+      const isEmailExist = await Account.exists({ email: email });
+      if (!isEmailExist) {
+        throw new Error();
       }
-    }),
+    })
+    .withMessage('Email already in use'),
   body('password')
     .isLength({ min: 8 })
     .withMessage('Password must be more than 8 character length'),
-  
-  async(req, res, next) => {
+
+  async (req, res, next) => {
     // Check validation result
     const errors = validationResult(req);
     // Return fail in validation
@@ -39,25 +41,25 @@ exports.register_new_account = [
     }
     try {
       // Hashing password
-      const hashedpassword = await bcrypt.hash(req.body.password, 10);
+      const hashedPassword = await bcrypt.hash(req.body.password, 10);
 
       // New Account
       const account = new Account({
         first_name: req.body.first_name,
         last_name: req.body.last_name,
         email: req.body.email,
-        password: hashedpassword
+        password: hashedPassword,
       });
 
       // Save
-      const saveAccount = await account.save();
+      await account.save();
 
       // Send status success
       res.sendStatus(201);
       // res.status(201).json(saveAccount); //delete later
 
-      // Send email to Admin 
-      let transporter = nodemailer.createTransport({
+      // Send email to Admin
+      const transporter = nodemailer.createTransport({
         service: 'gmail',
         auth: {
           user: 'glintsipe1@gmail.com', // generated ethereal user
@@ -84,25 +86,25 @@ exports.register_new_account = [
           }
           // Send response
           return res.sendStatus(200);
-        },
+        }
       );
-    } catch (error){
-      res.status(400).json({message: error.message});
+    } catch (error) {
+      res.status(400).json({ message: error.message });
     }
-  }
+  },
 ];
 
 // Forget Password
-exports.forget_password = async(req, res) => {
+exports.forget_password = async (req, res) => {
   // Check email
-  const account = await Account.isEmailExist(req.body.email);
-  if(!account) return res.status(404).json({ message:"Email not found." });
+  const account = await Account.findOne({ email: email });
+  if (!account) return res.status(404).json({ message: 'Email not found.' });
   // console.log(account) //delete later
   try {
     const resetToken = jwt.sign(
       { id: account.id },
       process.env.FORGET_PASSWORD_SECRET,
-      { expiresIn: '15m' },
+      { expiresIn: '15m' }
     );
 
     // create reusable transporter object using the default SMTP transport
@@ -136,12 +138,12 @@ exports.forget_password = async(req, res) => {
         }
         // Send response
         return res.sendStatus(200);
-      },
+      }
     );
-  } catch (error){
-    res.status(400).json({message: error.message});
+  } catch (error) {
+    res.status(400).json({ message: error.message });
   }
-}
+};
 
 // Reset password
 exports.reset_password = [
@@ -149,9 +151,17 @@ exports.reset_password = [
   body('password')
     .isLength({ min: 8 })
     .withMessage('Password must be more than 8 character length'),
-  
-  async(req, res, next) => {
+
+  async (req, res, next) => {
     try {
+      // Check validation result
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        return res
+          .status(400)
+          .json({ message: 'Password must be more than 8 character length' });
+      }
+      
       // Verify token
       jwt.verify(
         req.params.resetToken,
@@ -159,18 +169,15 @@ exports.reset_password = [
         (error, account) => {
           // Check errors
           if (error) {
-            return res.status(403).json({ message: "Reset token is incorrect" });
+            return res
+              .status(403)
+              .json({ message: 'Reset token is incorrect' });
           }
           // Add account to request object
           req.account = account;
-        },
+        }
       );
-      // Check validation result
-      const errors = validationResult(req);
-      if (!errors.isEmpty()) {
-        return res.status(400).json({ message: 'Password must be more than 8 character length' });
-      }
-  
+
       // Hashing password
       const hashedPassword = await bcrypt.hash(req.body.password, 10);
 
@@ -181,9 +188,9 @@ exports.reset_password = [
       res.status(200).json({ message: 'Password updated successfully' });
     } catch (error) {
       // Send error message
-      res.status(400).json({message: error.message});
-    };
-  }
+      res.status(400).json({ message: error.message });
+    }
+  },
 ];
 
 exports.login = [
@@ -274,6 +281,10 @@ exports.login = [
           first_name,
           last_name,
           isAdmin,
+          office_location: {
+            lat: -6.175,
+            long: 106.8286,
+          },
           access_token: accessToken,
           refresh_token: refreshToken,
         },
