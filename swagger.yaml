@@ -222,6 +222,13 @@ paths:
                         type: string
                       isAdmin:
                         type: boolean
+                      office_location:
+                          type: object
+                          properties:
+                            lat:
+                              type: number
+                            long:
+                              type: number
                       access_token:
                         type: string
                       refresh_token:
@@ -268,6 +275,15 @@ paths:
                     type: string
                   status:
                     type: string
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
   /attendances:
     get:
       tags:
@@ -277,6 +293,10 @@ paths:
       security:
         - access_token: []
       parameters:
+        - in: header
+          name: refresh_token
+          schema:
+            type: string
         - in: query
           name: year
           schema:
@@ -290,6 +310,11 @@ paths:
       responses:
         '400':
           description: Bad Request. Request query parameters did not pass validation.
+          headers:
+            new_access_token:
+              schema:
+                type: string
+              description: Only available after refreshing token. Use this token for next api calls.
           content:
             application/json:
               schema:
@@ -312,6 +337,11 @@ paths:
                           type: string
         '403':
           description: Forbidden. Current user don't have admin privilege.
+          headers:
+            new_access_token:
+              schema:
+                type: string
+              description: Only available after refreshing token. Use this token for next api calls.
           content:
             application/json:
               schema:
@@ -321,6 +351,11 @@ paths:
                     type: string
         '200':
           description: OK. Attendances of all users retrieved successfully.
+          headers:
+            new_access_token:
+              schema:
+                type: string
+              description: Only available after refreshing token. Use this token for next api calls.
           content:
             application/json:
               schema:
@@ -359,6 +394,15 @@ paths:
                               type: number
                             long:
                               type: number
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
   /attendances/{userId}:
     get:
       tags:
@@ -368,6 +412,10 @@ paths:
       security:
         - access_token: []
       parameters:
+        - in: header
+          name: refresh_token
+          schema:
+            type: string
         - in: path
           name: userId # Note the name is the same as in the path
           required: true
@@ -387,6 +435,11 @@ paths:
       responses:
         '200':
           description: OK. Attendance of requested user retrieved successfully.
+          headers:
+            new_access_token:
+              schema:
+                type: string
+              description: Only available after refreshing token. Use this token for next api calls.
           content:
             application/json:
               schema:
@@ -421,6 +474,11 @@ paths:
                               type: number
         '400':
           description: Bad Request. Request query parameters did not pass the validation process.
+          headers:
+            new_access_token:
+              schema:
+                type: string
+              description: Only available after refreshing token. Use this token for next api calls.
           content:
             application/json:
               schema:
@@ -443,6 +501,20 @@ paths:
                           type: string
         '403':
           description: Forbidden. Current account does not have access to the requested user id.
+          headers:
+            new_access_token:
+              schema:
+                type: string
+              description: Only available after refreshing token. Use this token for next api calls.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+        '500':
+          description: Internal server error
           content:
             application/json:
               schema:
@@ -466,6 +538,11 @@ paths:
       responses:
         '200':
           description: Success retrieve account list
+          headers:
+            new_access_token:
+              schema:
+                type: string
+              description: Only available after refreshing token. Use this token for next api calls.
           content:
             application/json:
               schema:
@@ -488,6 +565,11 @@ paths:
                     format: date
         '401':
           description: Authentication error
+          headers:
+            new_access_token:
+              schema:
+                type: string
+              description: Only available after refreshing token. Use this token for next api calls.
           content:
             application/json:
               schema:
@@ -510,6 +592,11 @@ paths:
                           type: string
         '403':
           description: Forbidden error. Access token invalid or user don't have admin role
+          headers:
+            new_access_token:
+              schema:
+                type: string
+              description: Only available after refreshing token. Use this token for next api calls.
           content:
             application/json:
               schema:
@@ -519,6 +606,11 @@ paths:
                     type: string
         '500':
           description: Internal server error
+          headers:
+            new_access_token:
+              schema:
+                type: string
+              description: Only available after refreshing token. Use this token for next api calls.
           content:
             application/json:
               schema:
@@ -560,6 +652,10 @@ paths:
       security:
         - access_token: []
       parameters:
+        - in: header
+          name: refresh_token
+          schema:
+            type: string
         - in: path
           name: userId # Note the name is the same as in the path
           required: true
@@ -569,6 +665,11 @@ paths:
       responses:
         '400':
           description: Bad Request. Request query parameters did not pass the validation process.
+          headers:
+            new_access_token:
+              schema:
+                type: string
+              description: Only available after refreshing token. Use this token for next api calls.
           content:
             application/json:
               schema:
@@ -591,6 +692,11 @@ paths:
                           type: string
         '403':
           description: Forbidden. Current account does not have access to the requested user id.
+          headers:
+            new_access_token:
+              schema:
+                type: string
+              description: Only available after refreshing token. Use this token for next api calls.
           content:
             application/json:
               schema:
@@ -600,6 +706,11 @@ paths:
                     type: string
         '200':
           description: OK. User attendance status retrieved successfully.
+          headers:
+            new_access_token:
+              schema:
+                type: string
+              description: Only available after refreshing token. Use this token for next api calls.
           content:
             application/json:
               schema:
@@ -639,6 +750,15 @@ paths:
                                 type: number
                               long:
                                 type: number
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
   /attendances/{userId}/in:
     post:
       tags:
@@ -648,6 +768,10 @@ paths:
       security:
         - access_token: []
       parameters:
+        - in: header
+          name: refresh_token
+          schema:
+            type: string
         - in: path
           name: userId # Note the name is the same as in the path
           required: true
@@ -671,6 +795,11 @@ paths:
       responses:
         '400':
           description: Bad Request. Request body fields did not pass the validation process.
+          headers:
+            new_access_token:
+              schema:
+                type: string
+              description: Only available after refreshing token. Use this token for next api calls.
           content:
             application/json:
               schema:
@@ -693,6 +822,11 @@ paths:
                           type: string
         '403':
           description: Forbidden. Cannot check in with this user
+          headers:
+            new_access_token:
+              schema:
+                type: string
+              description: Only available after refreshing token. Use this token for next api calls.
           content:
             application/json:
               schema:
@@ -700,8 +834,22 @@ paths:
                 properties:
                   message:
                     type: string
-        '200':
+        '201':
           description: OK. Check in success. Time and location saved in the database.
+          headers:
+            new_access_token:
+              schema:
+                type: string
+              description: Only available after refreshing token. Use this token for next api calls.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+        '500':
+          description: Internal server error
           content:
             application/json:
               schema:
@@ -718,6 +866,10 @@ paths:
       security:
         - access_token: []
       parameters:
+        - in: header
+          name: refresh_token
+          schema:
+            type: string
         - in: path
           name: userId # Note the name is the same as in the path
           required: true
@@ -741,6 +893,11 @@ paths:
       responses:
         '400':
           description: Bad Request. Request body fields did not pass the validation process.
+          headers:
+            new_access_token:
+              schema:
+                type: string
+              description: Only available after refreshing token. Use this token for next api calls.
           content:
             application/json:
               schema:
@@ -763,6 +920,11 @@ paths:
                           type: string
         '403':
           description: Forbidden. Cannot check out with this user
+          headers:
+            new_access_token:
+              schema:
+                type: string
+              description: Only available after refreshing token. Use this token for next api calls.
           content:
             application/json:
               schema:
@@ -770,8 +932,22 @@ paths:
                 properties:
                   message:
                     type: string
-        '200':
+        '201':
           description: OK. Check in success. Time and location saved in the database.
+          headers:
+            new_access_token:
+              schema:
+                type: string
+              description: Only available after refreshing token. Use this token for next api calls.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+        '500':
+          description: Internal server error
           content:
             application/json:
               schema:
