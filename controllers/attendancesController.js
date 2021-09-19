@@ -3,12 +3,7 @@ const Account = require('../models/account');
 const { DateTime } = require('luxon');
 const { query, param, validationResult, body } = require('express-validator');
 const { getDistance } = require('geolib');
-const {
-  client,
-  getAsync,
-  setexAsync,
-  delAsync,
-} = require('../configs/redis-client');
+const { getAsync, setexAsync, delAsync } = require('../configs/redis-client');
 
 // Get all attendance of all user in a monthly period. Admin only.
 exports.get_attendances_of_all_users = [
@@ -103,7 +98,7 @@ exports.get_attendances_of_all_users = [
       });
 
       // Save to cache for 1 hour and will be deleted early when any user checked out.
-      await setexAsync(
+      setexAsync(
         `Attendances:all:${year}:${month}`,
         1 * 60 * 60,
         JSON.stringify(results)
@@ -149,7 +144,7 @@ exports.get_attendances_by_user_id = [
     }
 
     // Check if current account match with requested user id in query params
-    if (req.account.id !== req.params.userId) {
+    if (req.account.id !== req.params.userId && !req.account.isAdmin) {
       return res.status(403).json({
         message:
           'Current account does not have access to the requested user id.',
