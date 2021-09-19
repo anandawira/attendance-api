@@ -3,6 +3,7 @@ const Account = require('../models/account');
 const { DateTime } = require('luxon');
 const { query, param, validationResult, body } = require('express-validator');
 const { getDistance } = require('geolib');
+const { getAsync, setexAsync, delAsync } = require('../configs/redis-client');
 
 // Get all attendance of all user in a monthly period. Admin only.
 exports.get_attendances_of_all_users = [
@@ -40,6 +41,15 @@ exports.get_attendances_of_all_users = [
     // Get year and month from query parameters with default current year and month
     const year = parseInt(req.query.year || now.year);
     const month = parseInt(req.query.month || now.month);
+
+    // Check cache
+    const cachedResult = await getAsync(`Attendances:all:${year}:${month}`);
+    if (cachedResult) {
+      return res.status(200).json({
+        message: 'Attendances of all users retrieved successfully',
+        results: JSON.parse(cachedResult),
+      });
+    }
 
     // Generating startDate and endDate for mongoDB querying
     const startDate = DateTime.fromObject({ year: year, month: month }).setZone(
@@ -82,10 +92,17 @@ exports.get_attendances_of_all_users = [
       });
 
       // Send response to user
-      return res.status(200).json({
+      res.status(200).json({
         message: 'Attendances of all users retrieved successfully',
         results,
       });
+
+      // Save to cache for 1 hour and will be deleted early when any user checked out.
+      setexAsync(
+        `Attendances:all:${year}:${month}`,
+        1 * 60 * 60,
+        JSON.stringify(results)
+      );
     } catch (err) {
       // Pass error to error handler
       return next(err);
@@ -127,7 +144,7 @@ exports.get_attendances_by_user_id = [
     }
 
     // Check if current account match with requested user id in query params
-    if (req.account.id !== req.params.userId) {
+    if (req.account.id !== req.params.userId && !req.account.isAdmin) {
       return res.status(403).json({
         message:
           'Current account does not have access to the requested user id.',
@@ -275,11 +292,9 @@ exports.check_in_attendance_by_user_id = [
 
       // Check if user can check in
       if (!userStatus.canCheckIn) {
-        return res
-          .status(403)
-          .json({
-            message: 'Cannot check in this user. User already checked in today',
-          });
+        return res.status(403).json({
+          message: 'Cannot check in this user. User already checked in today',
+        });
       }
 
       // Calculate distance between user and the office
@@ -304,7 +319,7 @@ exports.check_in_attendance_by_user_id = [
 
       await attendanceObject.save();
 
-      return res.status(201).json({
+      return res.status(200).json({
         message: `Check in success. Time and location saved in the database.`,
       });
     } catch (err) {
@@ -373,6 +388,7 @@ exports.check_out_attendance_by_user_id = [
         });
       }
 
+      // insert out_time and out_location to attendance object
       const updatedAttendance = await Attendance.findByIdAndUpdate(
         userStatus.last_record.id,
         {
@@ -383,9 +399,17 @@ exports.check_out_attendance_by_user_id = [
         }
       );
 
-      return res.status(201).json({
+      // Send response to client
+      res.status(200).json({
         message: `Check out success. Time and location saved in the database.`,
       });
+
+      // Remove cache for the month
+      const now = DateTime.now().setZone('Asia/Jakarta');
+      const { year, month } = now;
+      await delAsync(`Attendances:all:${year}:${month}`);
+
+      return;
     } catch (err) {
       return next(err);
     }
