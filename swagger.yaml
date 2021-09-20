@@ -859,7 +859,7 @@ paths:
                 properties:
                   message:
                     type: string
-    /admin/last-attendances:
+  /admin/last-attendances:
     get:
       tags:
       - Admin
@@ -888,7 +888,7 @@ paths:
                     items:
                       type: object
                       properties:
-                        id:
+                        _id:
                           type: string
                         first_name:
                           type: string
