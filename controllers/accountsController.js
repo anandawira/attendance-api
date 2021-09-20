@@ -23,7 +23,7 @@ exports.register_new_account = [
     .toLowerCase()
     .custom(async (email) => {
       const isEmailExist = await Account.exists({ email: email });
-      if (!isEmailExist) {
+      if (isEmailExist) {
         throw new Error();
       }
     })
@@ -91,7 +91,7 @@ exports.register_new_account = [
 // Forget Password
 exports.forget_password = async (req, res) => {
   // Check email
-  const account = await Account.findOne({ email: email });
+  const account = await Account.findOne({ email: req.body.email });
   if (!account) return res.status(404).json({ message: 'Email not found.' });
   // console.log(account) //delete later
   try {
