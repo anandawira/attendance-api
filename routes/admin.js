@@ -18,3 +18,9 @@ Update account approval
 router.put("/:id?", adminController.update_approval);
 
 module.exports = router;
+
+/* 
+[GET] /v1/admin/last-attendances
+Get list all user last attendances
+*/
+router.get("/last-attendances", adminController.last_attendances);
