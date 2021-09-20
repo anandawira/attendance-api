@@ -23,7 +23,7 @@ exports.register_new_account = [
     .toLowerCase()
     .custom(async (email) => {
       const isEmailExist = await Account.exists({ email: email });
-      if (!isEmailExist) {
+      if (isEmailExist) {
         throw new Error();
       }
     })
