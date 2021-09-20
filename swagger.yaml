@@ -1025,6 +1025,76 @@ paths:
                 properties:
                   message:
                     type: string
+  /admin/last-attendances:
+    get:
+      tags:
+      - Admin
+      summary: Retrieve all account last attendances.
+      description: ''
+      security:
+        - access_token: []
+      parameters:
+        - in: header
+          name: access_token
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Success retrieve all user last attendances.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                      type: string
+                      example: All account last attendances retrieved successfully.
+                  results:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        _id:
+                          type: string
+                        first_name:
+                          type: string
+                        last_name:
+                          type: string
+                        last_check_in:
+                          type: string
+                          format: date-time
+                        last_check_out:
+                          type: string
+                          format: date-time
+        '401':
+          description: Authentication error.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Invalid access token.
+        '403':
+          description: Forbidden access. Access token invalid or user don't have admin role.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: This user doesn't have admin role.
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
 components:
   securitySchemes:
     access_token: # arbitrary name for the security scheme
