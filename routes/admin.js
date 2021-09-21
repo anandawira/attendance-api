@@ -2,6 +2,7 @@ var express = require('express');
 var router = express.Router();
 const adminController = require('../controllers/adminController');
 const authenticateToken = require('../middleware/authenticateAccessToken');
+const attendancesController = require('../controllers/attendancesController');
 
 router.use(authenticateToken);
 
@@ -17,10 +18,16 @@ Update account approval
 */
 router.put("/:id?", adminController.update_approval);
 
-module.exports = router;
-
 /* 
 [GET] /v1/admin/last-attendances
 Get list all user last attendances
 */
 router.get("/last-attendances", adminController.last_attendances);
+
+/* 
+[GET] /v1/admin/absences
+Get absences of all users
+*/
+router.get('/absences', attendancesController.get_all_absences);
+
+module.exports = router;

@@ -4,6 +4,9 @@ const { DateTime } = require('luxon');
 const { query, param, validationResult, body } = require('express-validator');
 const { getDistance } = require('geolib');
 const { getAsync, setexAsync, delAsync } = require('../configs/redis-client');
+const moment = require('moment-business-days');
+require('moment-timezone');
+
 
 // Get all attendance of all user in a monthly period. Admin only.
 exports.get_attendances_of_all_users = [
@@ -411,6 +414,140 @@ exports.check_out_attendance_by_user_id = [
 
       return;
     } catch (err) {
+      return next(err);
+    }
+  },
+];
+
+// Get all absences of all user in a monthly period. Admin only.
+exports.get_all_absences = [
+  query('year')
+    .optional()
+    .isInt({ min: 1, max: 10000 })
+    .withMessage(`query parameter 'year' invalid.`),
+  query('month')
+    .optional()
+    .isInt({ min: 1, max: 12 })
+    .withMessage(
+      `query parameter 'month' is invalid. please only use number 1 to 12.`
+    ),
+  async (req, res, next) => {
+    // Check if user is admin
+    if (!req.account.isAdmin) {
+      return res
+        .status(403)
+        .json({ message: `Current user don't have admin privilege` });
+    }
+
+    // Check validation result
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({
+        message:
+          'Request query parameters did not pass the validation process.',
+        errors: errors.array(),
+      });
+    }
+
+    // Create current date object
+    const now = DateTime.now().setZone('Asia/Jakarta');
+
+    // Get year and month from query parameters with default current year and month
+    const year = parseInt(req.query.year || now.year);
+    const month = parseInt(req.query.month || now.month);
+
+    // Generating startDate and endDate for mongoDB querying
+    const startDate = DateTime.fromObject({ year: year, month: month }).setZone(
+      'Asia/Jakarta'
+    );
+    const endDate = DateTime.fromObject(
+      month !== 12
+      ? { year: year, month: month + 1 }
+      : { year: year + 1, month: 1 }
+      ).setZone('Asia/Jakarta');
+      
+    try {
+      // Get all business/active day in selected month or this month
+      const businessDay = moment('01-' + month + '-' + year, 'DD-MM-YYYY').monthBusinessDays();
+
+      // Retrieve approved account and not admin
+      const account  = await Account.find({
+          status:'approved',
+          isAdmin:false,
+        },
+        {
+          first_name:1,
+          last_name:1,
+          email:1,
+        }
+      );
+      
+      // Creating object from cartesian with account and all business day
+      var accountAllDay = [];
+      account.map((account) => {
+        const { _id, first_name, last_name, email } = account;
+        businessDay.forEach((day) => {
+          let element = {};
+          element.id = _id;
+          element.first_name = first_name;
+          element.last_name = last_name;
+          element.email = email;
+          element.day = day.format("YYYY-MM-DD");
+          accountAllDay.push(element);
+        });
+      });
+
+      // Creating object from attendance and account
+      const attendances = await Attendance.find(
+        {
+          in_time: { $gte: startDate, $lt: endDate },
+          out_time: { $exists: true },
+        }
+        ,
+        '-__v'
+      )
+        .lean({ virtuals: true })
+        .populate('account', 'first_name last_name email isAdmin status');
+
+      // Creating object from attendance and account
+      const attendanceAccount = attendances.filter((attendance) =>{
+        const { isAdmin, status } = attendance.account;
+        const { work_duration_minutes } = attendance;
+
+        // Filter with approved account, non admin, and sufficient work hours (8 hours)
+        if ( status == 'approved' &&
+             isAdmin==false &&
+             work_duration_minutes >= 480 )
+          {
+            return true;
+          }
+        return false;
+      })
+      // Mapping to object
+      .map((attendance) => {
+        const { _id, first_name, last_name, email } = attendance.account;
+        const { in_time } = attendance;
+        const day = in_time.toISOString().slice(0, 10);
+        const id = _id;
+        return {
+          id,
+          first_name,
+          last_name,
+          email,
+          day,
+        };
+      });
+      
+      // Return not exist attendances
+      const results = accountAllDay.filter(val => !attendanceAccount.includes(val));
+
+      // Send response to user
+      return res.status(200).json({
+        message: 'Absences of all users retrieved successfully',
+        results,
+      });
+    } catch (err) {
+      // Pass error to error handler
       return next(err);
     }
   },
