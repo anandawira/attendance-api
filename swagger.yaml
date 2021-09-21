@@ -867,7 +867,7 @@ paths:
         - access_token: []
       parameters:
         - in: header
-          name: access_token
+          name: refresh_token
           schema:
             type: string
       responses:
@@ -940,7 +940,7 @@ paths:
         - access_token: []
       parameters:
         - in: header
-          name: access_token
+          name: refresh_token
           schema:
             type: string
         - in: path
@@ -1035,7 +1035,7 @@ paths:
         - access_token: []
       parameters:
         - in: header
-          name: access_token
+          name: refresh_token
           schema:
             type: string
       responses:
@@ -1099,15 +1099,25 @@ paths:
     get:
       tags:
       - Admin
-      summary: Retrieve all account absences.
+      summary: Retrieve all account absences in monthly period.
       description: ''
       security:
         - access_token: []
       parameters:
         - in: header
-          name: access_token
+          name: refresh_token
           schema:
             type: string
+        - in: query
+          name: year
+          schema:
+            type: integer
+          description: Year for filtering attendances. If omitted, system will use current year.
+        - in: query
+          name: month
+          schema:
+            type: integer
+          description: Month for filtering attendances. Use number from 1 to 12. If omitted, system will use current month
       responses:
         '200':
           description: Success retrieve all user absences.
@@ -1147,7 +1157,12 @@ paths:
                     type: string
                     example: Invalid access token.
         '403':
-          description: Forbidden access. Access token invalid or user don't have admin role.
+          description: Forbidden. Current user don't have admin privilege.
+          headers:
+            new_access_token:
+              schema:
+                type: string
+              description: Only available after refreshing token. Use this token for next api calls.
           content:
             application/json:
               schema:
@@ -1155,7 +1170,6 @@ paths:
                 properties:
                   message:
                     type: string
-                    example: This user doesn't have admin role.
         '500':
           description: Internal server error
           content:
