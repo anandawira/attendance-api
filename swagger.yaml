@@ -929,6 +929,76 @@ paths:
                 properties:
                   message:
                     type: string
+  /admin/absences:
+    get:
+      tags:
+      - Admin
+      summary: Retrieve all account absences.
+      description: ''
+      security:
+        - access_token: []
+      parameters:
+        - in: header
+          name: access_token
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Success retrieve all user absences.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                      type: string
+                      example: Absences of all users retrieved successfully.
+                  results:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                        first_name:
+                          type: string
+                        last_name:
+                          type: string
+                        email:
+                          type: string
+                          format: email
+                        day:
+                          type: string
+                          format: date
+        '401':
+          description: Authentication error.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Invalid access token.
+        '403':
+          description: Forbidden access. Access token invalid or user don't have admin role.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: This user doesn't have admin role.
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
 components:
   securitySchemes:
     access_token: # arbitrary name for the security scheme
