@@ -87,7 +87,7 @@ exports.get_attendances_of_all_users = [
           in_location,
           out_time,
           out_location,
-          work_duration,
+          work_duration_minutes,
         };
       });
 
