@@ -2,7 +2,8 @@ const Account = require('../models/account');
 const { body, validationResult } = require('express-validator');
 const mongoose = require('mongoose');
 
-exports.list_approval_account = async (req, res) => {
+// Get list account for approval
+exports.list_approval_account = async (req, res, next) => {
   // Check if account have admin access
   if (!req.account.isAdmin) {
     return res.status(403).json({ message: "This user doesn't have admin role" });
@@ -39,6 +40,8 @@ exports.list_approval_account = async (req, res) => {
   }
 };
 
+
+// Update account approval
 exports.update_approval = [
   // Validating status value
   body('status')
@@ -79,3 +82,43 @@ exports.update_approval = [
     }
   }
 ]
+
+// Get list all user last attendances
+exports.last_attendances = async (req, res, next) => {
+  // Check if account have admin access
+  if (!req.account.isAdmin) {
+    return res.status(403).json({ message: "This user doesn't have admin role" });
+  }
+  try {
+      // Get account list
+      const results = await Account.aggregate([
+        {
+          "$lookup": {
+            from: 'attendances',
+            localField: '_id',
+            foreignField: 'account',
+            as: 'attendances'
+           }
+        },
+        {
+          "$unwind": '$attendances'
+        },
+        {
+          '$group': {
+            _id: '$_id',
+            first_name: {'$first': '$first_name'},
+            last_name: {'$first': '$last_name'},
+            last_check_in: { '$max': '$attendances.in_time'},
+            last_check_out: { '$max': '$attendances.out_time'},
+          }
+        },
+      ]);
+      // send response
+      return res.status(200).json({
+        message: 'All account last attendances retrieved successfully.',
+        results,
+      });
+  } catch (error) {
+      next(error);
+  }
+};

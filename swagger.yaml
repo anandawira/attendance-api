@@ -577,127 +577,6 @@ paths:
                   message:
                     type: string
                     example: Internal server error
-  /admin/accounts:
-    get:
-      tags:
-        - Admin
-      summary: Get all registered account
-      description: ''
-      security:
-        - access_token: []
-      parameters:
-        - in: header
-          name: refresh_token
-          schema:
-            type: string
-      responses:
-        '200':
-          description: Success retrieve account list
-          headers:
-            new_access_token:
-              schema:
-                type: string
-              description: Only available after refreshing token. Use this token for next api calls.
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  id:
-                    type: string
-                  first_name:
-                    type: string
-                  last_name:
-                    type: string
-                  email:
-                    type: string
-                    format: email
-                  status:
-                    type: string
-                    enum: [pending, approved, rejected]
-                  CreatedAt:
-                    type: string
-                    format: date
-        '401':
-          description: Authentication error
-          headers:
-            new_access_token:
-              schema:
-                type: string
-              description: Only available after refreshing token. Use this token for next api calls.
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  message:
-                    type: string
-                  errors:
-                    type: array
-                    items:
-                      type: object
-                      properties:
-                        value:
-                          type: string
-                        msg:
-                          type: string
-                        param:
-                          type: string
-                        location:
-                          type: string
-        '403':
-          description: Forbidden error. Access token invalid or user don't have admin role
-          headers:
-            new_access_token:
-              schema:
-                type: string
-              description: Only available after refreshing token. Use this token for next api calls.
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  message:
-                    type: string
-        '500':
-          description: Internal server error
-          headers:
-            new_access_token:
-              schema:
-                type: string
-              description: Only available after refreshing token. Use this token for next api calls.
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  message:
-                    type: string
-                  results:
-                    type: array
-                    items:
-                      type: object
-                      properties:
-                        in_time:
-                          type: string
-                          format: date-time
-                        in_location:
-                          type: object
-                          properties:
-                            lat:
-                              type: number
-                            long:
-                              type: number
-                        out_time:
-                          type: string
-                          format: date-time
-                        out_location:
-                          type: object
-                          properties:
-                            lat:
-                              type: number
-                            long:
-                              type: number
   /attendances/{userId}/status:
     get:
       tags:
@@ -1042,7 +921,314 @@ paths:
                 properties:
                   message:
                     type: string
-
+  /admin:
+    get:
+      tags:
+      - Admin
+      summary: Retrieve all registered account
+      description: ''
+      security:
+        - access_token: []
+      parameters:
+        - in: header
+          name: access_token
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Success retrieve account list.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                      type: string
+                      example: Account list retrieved successfully.
+                  results:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                        first_name:
+                          type: string
+                        last_name:
+                          type: string
+                        email:
+                          type: string
+                          format: email
+                        status:
+                          type: string
+                          enum: [pending, approved, rejected]
+                        CreatedAt:
+                          type: string
+                          format: date
+        '401':
+          description: Authentication error.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Invalid access token.
+        '403':
+          description: Forbidden access. Access token invalid or user don't have admin role.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: This user doesn't have admin role.
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+  /admin/{id}:
+    put:
+      tags:
+      - Admin
+      summary: Update account approval
+      description: Update only to [pending, approved, rejected]
+      security:
+        - access_token: []
+      parameters:
+        - in: header
+          name: access_token
+          schema:
+            type: string
+        - in: path
+          name: id # Note the name is the same as in the path
+          required: true
+          schema:
+            type: string
+          description: account's id
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                status:
+                  type: string
+                  enum: [pending, approved, rejected]
+              required:
+                - status
+      responses:
+        '200':
+          description: Account approval updated successfully.
+          content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                message:
+                  type: string
+                  example: Account approval updated successfully.
+                status:
+                  type: string
+                  enum: [pending, approved, rejected]
+        '400':
+          description: Bad Request Body. Invalid approval status.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: array
+                    items:
+                      type: string
+                      example: Invalid approval status.
+        '401':
+          description: Authentication error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+        '403':
+          description: Forbidden access.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: This user doesn't have admin role.
+        '404':
+          description: Cannot find account.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Account not found.
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+  /admin/last-attendances:
+    get:
+      tags:
+      - Admin
+      summary: Retrieve all account last attendances.
+      description: ''
+      security:
+        - access_token: []
+      parameters:
+        - in: header
+          name: access_token
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Success retrieve all user last attendances.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                      type: string
+                      example: All account last attendances retrieved successfully.
+                  results:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        _id:
+                          type: string
+                        first_name:
+                          type: string
+                        last_name:
+                          type: string
+                        last_check_in:
+                          type: string
+                          format: date-time
+                        last_check_out:
+                          type: string
+                          format: date-time
+        '401':
+          description: Authentication error.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Invalid access token.
+        '403':
+          description: Forbidden access. Access token invalid or user don't have admin role.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: This user doesn't have admin role.
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+  /admin/absences:
+    get:
+      tags:
+      - Admin
+      summary: Retrieve all account absences.
+      description: ''
+      security:
+        - access_token: []
+      parameters:
+        - in: header
+          name: access_token
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Success retrieve all user absences.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                      type: string
+                      example: Absences of all users retrieved successfully.
+                  results:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                        first_name:
+                          type: string
+                        last_name:
+                          type: string
+                        email:
+                          type: string
+                          format: email
+                        day:
+                          type: string
+                          format: date
+        '401':
+          description: Authentication error.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Invalid access token.
+        '403':
+          description: Forbidden access. Access token invalid or user don't have admin role.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: This user doesn't have admin role.
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
 components:
   securitySchemes:
     access_token: # arbitrary name for the security scheme
