@@ -47,25 +47,14 @@ paths:
                 - password
       responses:
         '201':
-          description: User registered to the application successfully.
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  message:
-                    type: string
-                    example: Account register success.
+          description: User registered to the application successfully
         '400':
-          description: Bad Request. One of form data did NOT meet the requirements.
+          description: Bad Request. One of form data did NOT meet the requirement.
           content:
             application/json:
               schema:
                 type: object
                 properties:
-                  message:
-                    type: string
-                    example: Request body did not pass the validation process.
                   errors:
                     type: array
                     items:
@@ -109,16 +98,8 @@ paths:
       responses:
         '200':
           description: Operation success. Email sent to the user.
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  message:
-                    type: string
-                    example: Operation success. Email sent to the user.
         '404':
-          description: Email not found in the database.
+          description: Email not found in the database
           content:
             application/json:
               schema:
@@ -126,9 +107,8 @@ paths:
                 properties:
                   message:
                     type: string
-                    example: Email not found.
         '500':
-          description: Internal server error.
+          description: Internal server error
           content:
             application/json:
               schema:
@@ -138,69 +118,66 @@ paths:
                     type: string
 
   /accounts/reset-password/{resetToken}:
-      post:
-        tags:
-          - Account
-        summary: Change user's password
-        description: ''
-        parameters:
-          - in: path
-            name: resetToken # Note the name is the same as in the path
-            required: true
-            schema:
-              type: string
-            description: request token from the email
-        requestBody:
+    post:
+      tags:
+        - Account
+      summary: Change user's password
+      description: ''
+      parameters:
+        - in: path
+          name: resetToken # Note the name is the same as in the path
           required: true
+          schema:
+            type: string
+          description: request token from the email
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                password:
+                  type: string
+              required:
+                - password
+      responses:
+        '200':
+          description: Password changed successfully
           content:
-            application/x-www-form-urlencoded:
+            application/json:
               schema:
                 type: object
                 properties:
-                  password:
+                  message:
                     type: string
-                required:
-                  - password
-        responses:
-          '200':
-            description: Password changed successfully
-            content:
-              application/json:
-                schema:
-                  type: object
-                  properties:
-                    message:
-                      type: string
-                      example: Password updated successfully.
-          '400':
-            description: Password rejected. Must be at least 8 characters long.
-            content:
-              application/json:
-                schema:
-                  type: object
-                  properties:
-                    message:
-                      type: string
-                      example: Password must be more than 8 character length.
-          '403':
-            description: Reset token is incorrect
-            content:
-              application/json:
-                schema:
-                  type: object
-                  properties:
-                    message:
-                      type: string
-                      example: Reset token is incorrect.
-          '500':
-            description: Internal server error
-            content:
-              application/json:
-                schema:
-                  type: object
-                  properties:
-                    message:
-                      type: string
+        '400':
+          description: Password rejected. Must be at least 8 characters long.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+        '403':
+          description: Reset token is incorrect
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
 
   /accounts/auth:
     post:
@@ -234,28 +211,37 @@ paths:
                 properties:
                   message:
                     type: string
+                    example: User authentication success
                   data:
                     type: object
                     properties:
                       id:
                         type: string
+                        example: 61498405e96b85874e064b3d
                       first_name:
                         type: string
+                        example: User
                       last_name:
                         type: string
+                        example: User
                       isAdmin:
                         type: boolean
+                        example: false
                       office_location:
                           type: object
                           properties:
                             lat:
                               type: number
+                              example: -6.175
                             long:
                               type: number
+                              example: 106.8286
                       access_token:
                         type: string
+                        example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjYxNDk4NDA1ZTk2Yjg1ODc0ZTA2NGIzZCIsImlzQWRtaW4iOmZhbHNlLCJpYXQiOjE2MzIyMjc2MzMsImV4cCI6MTYzMjMxNDAzM30.xcj6gMQrBC8Ie8LebIYYeNEN-xzW9_A6QlM0743sDEA
                       refresh_token:
                         type: string
+                        example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjYxNDk4NDA1ZTk2Yjg1ODc0ZTA2NGIzZCIsImlhdCI6MTYzMjIyNzYzM30.YBqDoBQhPS-xyrFDwAPYk_9e8hDrV4fhHEaK9HyQuEU
         '400':
           description: Bad Request. Request body did not pass validation.
           content:
@@ -265,6 +251,7 @@ paths:
                 properties:
                   message:
                     type: string
+                    example: Request body did not pass the validation process.
                   errors:
                     type: array
                     items:
@@ -272,12 +259,16 @@ paths:
                       properties:
                         value:
                           type: string
+                          example: user@thisap
                         msg:
                           type: string
+                          example: Email invalid
                         param:
                           type: string
+                          example: email
                         location:
                           type: string
+                          example: body
         '401':
           description: Unauthorized. Email or password is incorrect.
           content:
@@ -287,6 +278,7 @@ paths:
                 properties:
                   message:
                     type: string
+                    example: Incorrect password.
         '403':
           description: Forbidden. Account has not been approved by admin.
           content:
@@ -296,8 +288,10 @@ paths:
                 properties:
                   message:
                     type: string
+                    example: This user has not been approved by admin.
                   status:
                     type: string
+                    example: pending
         '500':
           description: Internal server error
           content:
@@ -307,6 +301,7 @@ paths:
                 properties:
                   message:
                     type: string
+                    example: Internal server error
   /attendances:
     get:
       tags:
@@ -345,6 +340,7 @@ paths:
                 properties:
                   message:
                     type: string
+                    example: Request query parameters did not pass the validation process.
                   errors:
                     type: array
                     items:
@@ -352,12 +348,16 @@ paths:
                       properties:
                         value:
                           type: string
+                          example: "82"
                         msg:
                           type: string
+                          example: query parameter 'month' is invalid. please only use number 1 to 12.
                         param:
                           type: string
+                          example: month
                         location:
                           type: string
+                          example: query
         '403':
           description: Forbidden. Current user don't have admin privilege.
           headers:
@@ -372,6 +372,7 @@ paths:
                 properties:
                   message:
                     type: string
+                    example: Current user don't have admin privilege
         '200':
           description: OK. Attendances of all users retrieved successfully.
           headers:
@@ -386,6 +387,7 @@ paths:
                 properties:
                   message:
                     type: string
+                    example: Attendances of all users retrieved successfully
                   results:
                     type: array
                     items:
@@ -393,30 +395,39 @@ paths:
                       properties:
                         first_name:
                           type: string
+                          example: Fields
                         last_name:
                           type: string
+                          example: Arundel
                         email:
                           type: string
+                          example: farundel9@noaa.gov
                         in_time:
                           type: string
                           format: date-time
+                          example: '2021-08-01T00:12:58.199Z'
                         in_location:
                           type: object
                           properties:
                             lat:
                               type: number
+                              example: -6.175
                             long:
                               type: number
+                              example: 106.8286
                         out_time:
                           type: string
                           format: date-time
+                          example: '2021-08-01T09:21:58.199Z'
                         out_location:
                           type: object
                           properties:
                             lat:
                               type: number
+                              example: -6.175
                             long:
                               type: number
+                              example: 106.8286
         '500':
           description: Internal server error
           content:
@@ -426,6 +437,7 @@ paths:
                 properties:
                   message:
                     type: string
+                    example: Internal server error
   /attendances/{userId}:
     get:
       tags:
@@ -470,6 +482,7 @@ paths:
                 properties:
                   message:
                     type: string
+                    example: Attendance of requested user retrieved successfully.
                   results:
                     type: array
                     items:
@@ -478,23 +491,29 @@ paths:
                         in_time:
                           type: string
                           format: date-time
+                          example: "2021-09-16T16:26:33.429Z"
                         in_location:
                           type: object
                           properties:
                             lat:
                               type: number
+                              example: -6.175
                             long:
                               type: number
+                              example: 106.8286
                         out_time:
                           type: string
                           format: date-time
+                          example: "2021-09-16T16:26:44.921Z"
                         out_location:
                           type: object
                           properties:
                             lat:
                               type: number
+                              example: -6.175
                             long:
                               type: number
+                              example: 106.8286
         '400':
           description: Bad Request. Request query parameters did not pass the validation process.
           headers:
@@ -509,6 +528,7 @@ paths:
                 properties:
                   message:
                     type: string
+                    example: Request query parameters did not pass the validation process.
                   errors:
                     type: array
                     items:
@@ -516,12 +536,16 @@ paths:
                       properties:
                         value:
                           type: string
+                          example: 2021s
                         msg:
                           type: string
+                          example: query parameter 'year' invalid.
                         param:
                           type: string
+                          example: year
                         location:
                           type: string
+                          example: query
         '403':
           description: Forbidden. Current account does not have access to the requested user id.
           headers:
@@ -536,6 +560,7 @@ paths:
                 properties:
                   message:
                     type: string
+                    example: Current account does not have access to the requested user id.
         '500':
           description: Internal server error
           content:
@@ -545,6 +570,7 @@ paths:
                 properties:
                   message:
                     type: string
+                    example: Internal server error
   /admin/accounts:
     get:
       tags:
@@ -700,6 +726,7 @@ paths:
                 properties:
                   message:
                     type: string
+                    example: Request query parameters did not pass the validation process.
                   errors:
                     type: array
                     items:
@@ -707,12 +734,16 @@ paths:
                       properties:
                         value:
                           type: string
+                          example: 61
                         msg:
                           type: string
+                          example: user id is invalid
                         param:
                           type: string
+                          example: userId
                         location:
                           type: string
+                          example: params
         '403':
           description: Forbidden. Current account does not have access to the requested user id.
           headers:
@@ -727,6 +758,7 @@ paths:
                 properties:
                   message:
                     type: string
+                    example: Current account does not have access to the requested user id.
         '200':
           description: OK. User attendance status retrieved successfully.
           headers:
@@ -741,38 +773,48 @@ paths:
                 properties:
                   message:
                     type: string
+                    example: User attendance status retrieved successfully.
                   data:
                     type: object
                     properties:
                       canCheckIn:
                         type: boolean
+                        example: true
                       canCheckOut:
                         type: boolean
+                        example: false
                       last_record:
                         type: object
                         properties:
                           id:
                             type: string
+                            example: '6143703914f945162fe331ef'
                           in_time:
                             type: string
                             format: date-time
+                            example: "2021-09-16T16:26:33.429Z"
                           in_location:
                             type: object
                             properties:
                               lat:
                                 type: number
+                                example: -6.175
                               long:
                                 type: number
+                                example: 106.8286
                           out_time:
                             type: string
                             format: date-time
+                            example: "2021-09-16T16:26:44.921Z"
                           out_location:
                             type: object
                             properties:
                               lat:
                                 type: number
+                                example: -6.175
                               long:
                                 type: number
+                                example: 106.8286
         '500':
           description: Internal server error
           content:
@@ -782,6 +824,7 @@ paths:
                 properties:
                   message:
                     type: string
+                    example: Internal server error
   /attendances/{userId}/in:
     post:
       tags:
@@ -830,6 +873,7 @@ paths:
                 properties:
                   message:
                     type: string
+                    example: Request body fields did not pass the validation process.
                   errors:
                     type: array
                     items:
@@ -837,12 +881,16 @@ paths:
                       properties:
                         value:
                           type: string
+                          example: 106.8ss
                         msg:
                           type: string
+                          example: field 'long' value must be a float number between -180 and 180
                         param:
                           type: string
+                          example: long
                         location:
                           type: string
+                          example: body
         '403':
           description: Forbidden. Cannot check in with this user
           headers:
@@ -857,7 +905,8 @@ paths:
                 properties:
                   message:
                     type: string
-        '201':
+                    example: Cannot check in this user. User already checked in today
+        '200':
           description: OK. Check in success. Time and location saved in the database.
           headers:
             new_access_token:
@@ -871,6 +920,7 @@ paths:
                 properties:
                   message:
                     type: string
+                    example: Check in success. Time and location saved in the database.
         '500':
           description: Internal server error
           content:
@@ -880,6 +930,7 @@ paths:
                 properties:
                   message:
                     type: string
+                    example: Internal server error
   /attendances/{userId}/out:
     post:
       tags:
@@ -928,6 +979,7 @@ paths:
                 properties:
                   message:
                     type: string
+                    example: Request body fields did not pass the validation process.
                   errors:
                     type: array
                     items:
@@ -935,12 +987,16 @@ paths:
                       properties:
                         value:
                           type: string
+                          example: 106.82ss
                         msg:
                           type: string
+                          example: field 'long' value must be a float number between -180 and 180
                         param:
                           type: string
+                          example: long
                         location:
                           type: string
+                          example: body
         '403':
           description: Forbidden. Cannot check out with this user
           headers:
@@ -955,7 +1011,8 @@ paths:
                 properties:
                   message:
                     type: string
-        '201':
+                    example: Cannot check out this user.
+        '200':
           description: OK. Check in success. Time and location saved in the database.
           headers:
             new_access_token:
@@ -969,6 +1026,7 @@ paths:
                 properties:
                   message:
                     type: string
+                    example: Check out success. Time and location saved in the database.
         '500':
           description: Internal server error
           content:
@@ -978,174 +1036,7 @@ paths:
                 properties:
                   message:
                     type: string
-  /admin:
-    get:
-      tags:
-      - Admin
-      summary: Retrieve all registered account
-      description: ''
-      security:
-        - access_token: []
-      parameters:
-        - in: header
-          name: access_token
-          schema:
-            type: string
-      responses:
-        '200':
-          description: Success retrieve account list.
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  message:
-                      type: string
-                      example: Account list retrieved successfully.
-                  results:
-                    type: array
-                    items:
-                      type: object
-                      properties:
-                        id:
-                          type: string
-                        first_name:
-                          type: string
-                        last_name:
-                          type: string
-                        email:
-                          type: string
-                          format: email
-                        status:
-                          type: string
-                          enum: [pending, approved, rejected]
-                        CreatedAt:
-                          type: string
-                          format: date
-        '401':
-          description: Authentication error.
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  message:
-                    type: string
-                    example: Invalid access token.
-        '403':
-          description: Forbidden access. Access token invalid or user don't have admin role.
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  message:
-                    type: string
-                    example: This user doesn't have admin role.
-        '500':
-          description: Internal server error
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  message:
-                    type: string
-  /admin/{id}:
-    put:
-      tags:
-      - Admin
-      summary: Update account approval
-      description: Update only to [pending, approved, rejected]
-      security:
-        - access_token: []
-      parameters:
-        - in: header
-          name: access_token
-          schema:
-            type: string
-        - in: path
-          name: id # Note the name is the same as in the path
-          required: true
-          schema:
-            type: string
-          description: account's id
-      requestBody:
-        required: true
-        content:
-          application/x-www-form-urlencoded:
-            schema:
-              type: object
-              properties:
-                status:
-                  type: string
-                  enum: [pending, approved, rejected]
-              required:
-                - status
-      responses:
-        '200':
-          description: Account approval updated successfully.
-          content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                message:
-                  type: string
-                  example: Account approval updated successfully.
-                status:
-                  type: string
-                  enum: [pending, approved, rejected]
-        '400':
-          description: Bad Request Body. Invalid approval status.
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  message:
-                    type: array
-                    items:
-                      type: string
-                      example: Invalid approval status.
-        '401':
-          description: Authentication error
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  message:
-                    type: string
-        '403':
-          description: Forbidden access.
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  message:
-                    type: string
-                    example: This user doesn't have admin role.
-        '404':
-          description: Cannot find account.
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  message:
-                    type: string
-                    example: Account not found.
-        '500':
-          description: Internal server error
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  message:
-                    type: string
+
 components:
   securitySchemes:
     access_token: # arbitrary name for the security scheme
