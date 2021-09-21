@@ -76,7 +76,7 @@ exports.get_attendances_of_all_users = [
       // Creating result object
       const results = attendances.map((attendance) => {
         const { first_name, last_name, email } = attendance.account;
-        const { in_time, in_location, out_time, out_location, work_duration } =
+        const { in_time, in_location, out_time, out_location, work_duration_minutes } =
           attendance;
 
         return {
@@ -181,7 +181,7 @@ exports.get_attendances_by_user_id = [
 
       // Creating result object
       const results = attendances.map((attendance) => {
-        const { in_time, in_location, out_time, out_location, work_duration } =
+        const { in_time, in_location, out_time, out_location, work_duration_minutes } =
           attendance;
 
         return {
@@ -189,7 +189,7 @@ exports.get_attendances_by_user_id = [
           in_location,
           out_time,
           out_location,
-          work_duration,
+          work_duration_minutes,
         };
       });
 
