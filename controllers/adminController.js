@@ -1,6 +1,7 @@
 const Account = require('../models/account');
 const { body, validationResult } = require('express-validator');
 const mongoose = require('mongoose');
+const nodemailer = require('nodemailer');
 
 // Get list account for approval
 exports.list_approval_account = async (req, res, next) => {
@@ -47,6 +48,8 @@ exports.update_approval = [
   body('status')
     .isIn(['pending','approved','rejected'])
     .withMessage("Invalid approval status."),
+  body('message')
+    .optional(),
   async (req, res, next) => {
     // Check if account have admin access
     if (!req.account.isAdmin) {
@@ -71,6 +74,35 @@ exports.update_approval = [
       // Update approval
       await Account.findByIdAndUpdate({_id:req.params.id}, { status: req.body.status });
 
+      // Get admin message
+      const notes = req.body.message || "-";
+
+      // Send message to user email
+      let transporter = nodemailer.createTransport({
+        service: 'gmail',
+        auth: {
+          user: 'glintsipe1@gmail.com', // generated ethereal user
+          pass: process.env.GMAIL_PASSWORD, // generated ethereal password
+        },
+      });
+
+      // send mail with defined transport object
+      transporter.sendMail(
+        {
+          from: '"Attendance App Glints-IPE1" <glintsipe1@gmail.com>', // sender address
+          to: account.email, // list of receivers
+          subject: 'Account Approval Updates', // Subject line
+          html: `<p>Hi ${account.first_name},</p>
+          <p>Your account approval have been changed with the following status:</p>
+          <p>Status: ${req.body.status}</p>
+          <p>Note: ${notes}</p>
+          <p>Contact us if you think this update is wrong.</p>
+          <p></p>
+          <p><a href="https://${req.hostname}/">Attendance App - Glints IPE 1</a></p>
+          `, // html body
+        }
+      );
+      
       // Send status OK
       return res.status(200).json({
           message: 'Account approval updated successfully.',
