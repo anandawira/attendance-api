@@ -45,4 +45,15 @@ router.post(
   attendancesController.check_out_attendance_by_user_id
 );
 
+/* 
+[PUT] /v1/attendances/{userId}/correction
+Correct incomplete attendance of user. ADMIN ONLY
+*/
+router.put(
+  '/',
+  attendancesController.correct_incomplete_attendance
+);
+
+
+
 module.exports = router;
