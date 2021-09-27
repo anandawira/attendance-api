@@ -541,10 +541,6 @@ exports.get_all_absences = [
       
       // Return not exist attendances
       const results = accountAllDay.filter(val => !attendanceAccount.includes(val));
-      // const count = attendances.filter((obj) => obj.account._id === _id).length;
-
-      // const count = results.filter((obj) => obj.id === results.id).length;
-      // console.log(count);
 
       // Send response to user
       return res.status(200).json({
