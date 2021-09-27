@@ -120,7 +120,7 @@ exports.forget_password = async (req, res) => {
         <p>Looks like you forgot your password. We cannot simply send you your old password.</p>
         <p>A unique link to reset your password has been generated for you. To
         reset your password, click the following link and follow the instructions.</p>
-        <p><a href="https://${req.hostname}/reset-password/?token=${resetToken}">Click here to reset your password</a>. This link will expire in 15 minutes.</p>
+        <p><a href="https://${req.hostname}/resetPassword/?token=${resetToken}">Click here to reset your password</a>. This link will expire in 15 minutes.</p>
         <p></p>
         <p>Attendance App - Glints IPE 1</p>
         `, // html body

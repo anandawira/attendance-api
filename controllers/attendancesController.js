@@ -511,13 +511,14 @@ exports.get_all_absences = [
 
       // Creating object from attendance and account
       const attendanceAccount = attendances.filter((attendance) =>{
-        const { isAdmin, status } = attendance.account;
-        const { work_duration_minutes } = attendance;
-
-        // Filter with approved account, non admin, and sufficient work hours (8 hours)
+        const { _id, isAdmin, status } = attendance.account;
+        const { work_duration_minutes} = attendance;
+        const count = attendances.filter((obj) => obj.account._id === _id).length;
+        // Filter with approved account, non admin, sufficient work hours (8 hours), and less than 19 active days
         if ( status == 'approved' &&
              isAdmin==false &&
-             work_duration_minutes >= 480 )
+             work_duration_minutes >= 480 &&
+             count <= 19)
           {
             return true;
           }
