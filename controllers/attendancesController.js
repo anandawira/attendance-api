@@ -598,7 +598,7 @@ exports.correct_incomplete_attendance = [
     if (!errors.isEmpty()) {
       return res.status(400).json({
         message:
-          'Request query parameters did not pass the validation process.',
+          'Request parameters did not pass the validation process.',
         errors: errors.array(),
       });
     }
@@ -607,7 +607,7 @@ exports.correct_incomplete_attendance = [
     if (!req.account.isAdmin) {
       return res
         .status(403)
-        .json({ message: `Current user don't have admin privilege` });
+        .json({ message: `Current user don't have admin privilege.` });
     }
 
     // Extract date
@@ -652,7 +652,7 @@ exports.correct_incomplete_attendance = [
           attendances[0].in_time !== undefined
         ) {
           return res
-            .status(403)
+            .status(405)
             .json({ message: 'Cannot modify this attendance' });
         }
       }
@@ -684,7 +684,7 @@ exports.correct_incomplete_attendance = [
 
       return res
         .status(200)
-        .json({ message: 'User attendance corrected successfully' });
+        .json({ message: 'User attendance corrected successfully.' });
     } catch (err) {
       return next(err);
     }
