@@ -5,6 +5,7 @@ This is our second project in the Glint's Industry Project Exploration Program. 
 ## Table of contents
 
 - [Features](#features)
+- [How to Install](#how-to-install)
 - [Tech Stacks](#tech-stacks)
 - [Environment Variables](#environment-variables)
 - [Deployment](#deployment)
@@ -31,6 +32,12 @@ This is our second project in the Glint's Industry Project Exploration Program. 
 
 - Admin can approve and reject registered user.
 - Admin can see list of attendance record by periods. Ex: daily, weekly, monthly.
+
+## How to Install
+Make sure you have nodejs and npm installed on your machine. And please make sure you already set [environment variables](#environment-variables) for this app.
+And then run the code below in the terminal.
+> npm install
+> npm run start
 
 ## Tech Stacks
 

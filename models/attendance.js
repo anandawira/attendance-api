@@ -12,6 +12,11 @@ const AttendanceSchema = new Schema({
   },
   out_time: { type: Date },
   out_location: { lat: Number, long: Number },
+  reason: {
+    type: String,
+    enum: ['leave', 'sick', 'other'],
+  },
+  description : String
 });
 
 // Get work duration in milliseconds
