@@ -1192,6 +1192,8 @@ paths:
                 status:
                   type: string
                   enum: [pending, approved, rejected]
+                message:
+                  type: string
               required:
                 - status
       responses:
@@ -1332,7 +1334,7 @@ paths:
     get:
       tags:
       - Admin
-      summary: Retrieve all account absences in monthly period.
+      summary: Retrieve all account absences more than 3 days in monthly period.
       description: ''
       security:
         - access_token: []
