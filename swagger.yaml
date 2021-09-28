@@ -358,6 +358,16 @@ paths:
                         location:
                           type: string
                           example: query
+        '401':
+          description: Authentication error.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Invalid access token.
         '403':
           description: Forbidden. Current user don't have admin privilege.
           headers:
@@ -552,6 +562,16 @@ paths:
                         location:
                           type: string
                           example: query
+        '401':
+          description: Authentication error.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Invalid access token.
         '403':
           description: Forbidden. Current account does not have access to the requested user id.
           headers:
@@ -567,6 +587,125 @@ paths:
                   message:
                     type: string
                     example: Current account does not have access to the requested user id.
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Internal server error
+    put:
+      tags:
+      - Attendance
+      summary: Correct user's attendance with reason and description
+      description: ''
+      parameters:
+        - in: header
+          name: refresh_token
+          schema:
+            type: string
+        - in: path
+          name: userId # Note the name is the same as in the path
+          required: true
+          schema:
+            type: string
+          description: user / account id
+        - in: query
+          name: date
+          schema:
+            type: string
+          description: Date to correct attendance in YYYY-MM-DD or YYY/MM/DD format
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                reason:
+                  type: string
+                  enum: [leave, sick, other]
+                description:
+                  type: string
+              required:
+                - lat
+                - long
+      responses:
+        '200':
+          description: OK. User attendance corrected successfully.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: User attendance corrected successfully.
+        '400':
+          description: Bad Request. Request parameters did not pass the validation process.
+          headers:
+            new_access_token:
+              schema:
+                type: string
+              description: Only available after refreshing token. Use this token for next api calls.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Request parameters did not pass the validation process.
+                  errors:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        value:
+                          type: string
+                          example: 61
+                        msg:
+                          type: string
+                          example: user id is invalid
+                        param:
+                          type: string
+                          example: userId
+                        location:
+                          type: string
+                          example: params
+        '401':
+          description: Authentication error.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Invalid access token.
+        '403':
+          description: Forbidden access.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Current user don't have admin privilege.
+        '405':
+          description: Method Not Allowed. Cannot modify this attendance.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Cannot modify this attendance.
         '500':
           description: Internal server error
           content:
@@ -629,6 +768,16 @@ paths:
                         location:
                           type: string
                           example: params
+        '401':
+          description: Authentication error.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Invalid access token.
         '403':
           description: Forbidden. Current account does not have access to the requested user id.
           headers:
@@ -776,6 +925,16 @@ paths:
                         location:
                           type: string
                           example: body
+        '401':
+          description: Authentication error.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Invalid access token.
         '403':
           description: Forbidden. Cannot check in with this user
           headers:
@@ -882,6 +1041,16 @@ paths:
                         location:
                           type: string
                           example: body
+        '401':
+          description: Authentication error.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Invalid access token.
         '403':
           description: Forbidden. Cannot check out with this user
           headers:
@@ -1029,16 +1198,16 @@ paths:
         '200':
           description: Account approval updated successfully.
           content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                message:
-                  type: string
-                  example: Account approval updated successfully.
-                status:
-                  type: string
-                  enum: [pending, approved, rejected]
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Account approval updated successfully.
+                  status:
+                    type: string
+                    enum: [pending, approved, rejected]
         '400':
           description: Bad Request Body. Invalid approval status.
           content:
