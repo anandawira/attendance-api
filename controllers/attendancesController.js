@@ -527,11 +527,11 @@ exports.get_all_absences = [
         const { _id, isAdmin, status } = attendance.account;
         const { work_duration_minutes} = attendance;
         const count = attendances.filter((obj) => obj.account._id === _id).length;
-        // Filter with approved account, non admin, sufficient work hours (8 hours), and not attending than 3 days
+        // Filter with approved account, non admin, 9 hours in work time, and not attending more than 3 days
         if (
           status == 'approved' &&
           isAdmin==false &&
-          work_duration_minutes >= 480 &&
+          work_duration_minutes >= 540 &&
           count <= (businessDay.length - 3 )
           )
         {
