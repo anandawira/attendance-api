@@ -49,11 +49,6 @@ router.post(
 [PUT] /v1/attendances/{userId}/correction
 Correct incomplete attendance of user. ADMIN ONLY
 */
-router.put(
-  '/',
-  attendancesController.correct_incomplete_attendance
-);
-
-
+router.put('/:userId/', attendancesController.correct_incomplete_attendance);
 
 module.exports = router;

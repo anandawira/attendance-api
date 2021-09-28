@@ -571,7 +571,7 @@ exports.get_all_absences = [
 ];
 
 exports.correct_incomplete_attendance = [
-  query('userId')
+  param('userId')
     .isMongoId()
     .withMessage(`'user id is invalid`)
     .bail()
@@ -642,14 +642,14 @@ exports.correct_incomplete_attendance = [
     try {
       // Check if correction allowed
       const attendances = await Attendance.find({
-        account: req.query.userId,
+        account: req.params.userId,
         in_time: { $gte: startDate, $lt: endDate },
       }).lean({ virtuals: true });
 
       if (attendances.length !== 0) {
         if (
-            attendances[0].out_time !== undefined &&
-            attendances[0].in_time !== undefined
+          attendances[0].out_time !== undefined &&
+          attendances[0].in_time !== undefined
         ) {
           return res
             .status(403)
@@ -660,7 +660,7 @@ exports.correct_incomplete_attendance = [
       // Correct the attendance
       if (attendances.length === 0) {
         const attendance = new Attendance({
-          account: mongoose.Types.ObjectId(req.query.userId),
+          account: mongoose.Types.ObjectId(req.params.userId),
           in_time: inTime,
           in_location: { lat: -6.175, long: 106.8286 },
           out_time: outTime,
