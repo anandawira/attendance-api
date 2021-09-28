@@ -527,30 +527,32 @@ exports.get_all_absences = [
         const { _id, isAdmin, status } = attendance.account;
         const { work_duration_minutes} = attendance;
         const count = attendances.filter((obj) => obj.account._id === _id).length;
-        // Filter with approved account, non admin, sufficient work hours (8 hours), and less than 19 active days
-        if ( status == 'approved' &&
-             isAdmin==false &&
-             work_duration_minutes >= 480 &&
-             count <= 19)
-          {
-            return true;
-          }
-          return false;
-        })
-        // Mapping to object
-        .map((attendance) => {
-          const { _id, first_name, last_name, email } = attendance.account;
-          const { in_time } = attendance;
-          const day = in_time.toISOString().slice(0, 10);
-          const id = _id;
-          return {
-            id,
-            first_name,
-            last_name,
-            email,
-            day,
-          };
-        });
+        // Filter with approved account, non admin, sufficient work hours (8 hours), and not attending than 3 days
+        if (
+          status == 'approved' &&
+          isAdmin==false &&
+          work_duration_minutes >= 480 &&
+          count <= (businessDay.length - 3 )
+          )
+        {
+          return true;
+        }
+        return false;
+      })
+      // Mapping to object
+      .map((attendance) => {
+        const { _id, first_name, last_name, email } = attendance.account;
+        const { in_time } = attendance;
+        const day = in_time.toISOString().slice(0, 10);
+        const id = _id;
+        return {
+          id,
+          first_name,
+          last_name,
+          email,
+          day,
+        };
+      });
 
       // Return not exist attendances
       const results = accountAllDay.filter(
