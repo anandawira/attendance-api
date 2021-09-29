@@ -16,7 +16,7 @@ const AttendanceSchema = new Schema({
     type: String,
     enum: ['leave', 'sick', 'other'],
   },
-  description : String
+  description: String,
 });
 
 // Get work duration in milliseconds
@@ -67,6 +67,11 @@ AttendanceSchema.statics.findByUserIdAndGetStatus = async function (userId) {
       out_location,
     };
 
+    // Check if in_time is before today
+    if (attendance.in_time < startOfToday) {
+      return { canCheckIn: true, canCheckOut: false, last_record: data };
+    }
+
     // Check if out_time is undefined
     if (attendance.out_time === undefined) {
       return {
@@ -74,13 +79,6 @@ AttendanceSchema.statics.findByUserIdAndGetStatus = async function (userId) {
         canCheckOut: true,
         last_record: data,
       };
-    }
-
-    // Check if in_time is yesterday
-    if (attendance.in_time < startOfToday) {
-      return { canCheckIn: true, canCheckOut: false, last_record: data };
-    } else {
-      return { canCheckIn: false, canCheckOut: false, last_record: data };
     }
   } catch (err) {
     throw new Error();
