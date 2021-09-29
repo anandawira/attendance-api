@@ -43,7 +43,7 @@ exports.get_attendances_of_all_users = [
 
     // Get year and month from query parameters with default current year and month
     const year = parseInt(req.query.year || now.year);
-    const month = parseInt(req.query.month || now.month); // TODO: for dev mode only
+    const month = parseInt(req.query.month || 8); // TODO: for dev mode only
 
     // Check cache
     const cachedResult = await getAsync(`Attendances:all:${year}:${month}`);
@@ -94,13 +94,6 @@ exports.get_attendances_of_all_users = [
           element.first_name = first_name;
           element.last_name = last_name;
           element.email = email;
-          element.in_time = null;
-          element.in_location = null;
-          element.out_time = null;
-          element.out_location = null;
-          element.work_duration_minutes = null;
-          element.reason = null;
-          element.description = null;
           element.day = day.format('YYYY-MM-DD');
           accountAllDay.push(element);
         });
@@ -115,6 +108,7 @@ exports.get_attendances_of_all_users = [
         .lean({ virtuals: true })
         .populate('account');
 
+      // Creating object attendances and account
       const attendanceAccount = attendances.map((attendance) => {
         const { _id } = attendance.account;
         const {
@@ -142,19 +136,20 @@ exports.get_attendances_of_all_users = [
 
       // Return result
       const results = accountAllDay.map((val) => {
-        let temp = attendanceAccount.find(element =>
+        let attendDay = attendanceAccount.find(element =>
           element._id.toString() === val._id.toString() &&
           element.match_day === val.day
         );
-        if(temp !== undefined) {
-          val.in_time               = temp.in_time;
-          val.in_location           = temp.in_location;
-          val.out_time              = temp.out_time;
-          val.out_location          = temp.out_location;
-          val.work_duration_minutes = temp.work_duration_minutes;
-          val.reason                = (temp.reason || null);
-          val.description           = (temp.description || null);
-        }
+        let temp = (attendDay !== undefined) ? attendDay : [];
+
+        val.in_time               = (temp.in_time || null);
+        val.in_location           = (temp.in_location || null);
+        val.out_time              = (temp.out_time|| null);
+        val.out_location          = (temp.out_location|| null);
+        val.work_duration_minutes = (temp.work_duration_minutes|| null);
+        val.reason                = (temp.reason || null);
+        val.description           = (temp.description || null);
+
         return val;
       });
 
@@ -237,25 +232,34 @@ exports.get_attendances_by_user_id = [
     ).setZone('Asia/Jakarta');
 
     try {
+      // Get all business/active day in month period
+      const businessDay = moment(
+        '01-' + month + '-' + year,
+        'DD-MM-YYYY'
+      ).monthBusinessDays();
+
       // Retrieve attendances by user id in period
       const attendances = await Attendance.find(
         {
           in_time: { $gte: startDate, $lt: endDate },
           account: req.account.id,
-          out_time: { $exists: true },
-        },
-        '-_id -__v -account'
+        }
       ).lean({ virtuals: true });
-
-      // Creating result object
-      const results = attendances.map((attendance) => {
+      
+      // Mapping attendances
+      const userAttendance = attendances.map((attendance) => {
         const {
           in_time,
           in_location,
           out_time,
           out_location,
           work_duration_minutes,
+          reason,
+          description,
         } = attendance;
+        
+        // Date format
+        const match_day = in_time.toISOString().slice(0, 10);
 
         return {
           in_time,
@@ -263,12 +267,43 @@ exports.get_attendances_by_user_id = [
           out_time,
           out_location,
           work_duration_minutes,
+          reason,
+          description,
+          match_day,
         };
       });
 
+      // Creating object from mapped attendances and all business day
+      const result = businessDay.map((rawDay) => {
+        // Date format
+        const day = rawDay.format('YYYY-MM-DD');
+
+        // Create object
+        let val = {};
+
+        // Match day
+        let attendDay = userAttendance.find(element => element.match_day === day);
+
+        // Check if undefined
+        let temp = (attendDay !== undefined) ? attendDay : [];
+
+        // Append to object
+        val.in_time               = (temp.in_time || null);
+        val.in_location           = (temp.in_location || null);
+        val.out_time              = (temp.out_time|| null);
+        val.out_location          = (temp.out_location|| null);
+        val.work_duration_minutes = (temp.work_duration_minutes|| null);
+        val.reason                = (temp.reason || null);
+        val.description           = (temp.description || null);
+        val.day                   = day;
+
+        return val;
+      });
+      
+      // Return success response
       return res.status(200).json({
         message: 'Attendance of requested user retrieved successfully.',
-        results,
+        result,
       });
     } catch (err) {
       return next(err);
