@@ -43,7 +43,7 @@ exports.get_attendances_of_all_users = [
 
     // Get year and month from query parameters with default current year and month
     const year = parseInt(req.query.year || now.year);
-    const month = parseInt(req.query.month || now.month); // TODO: for dev mode only
+    const month = parseInt(req.query.month || now.month);
 
     // Check cache
     const cachedResult = await getAsync(`Attendances:all:${year}:${month}`);
