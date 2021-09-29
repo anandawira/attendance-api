@@ -92,8 +92,9 @@ exports.register_new_account = [
 exports.forget_password = async (req, res) => {
   // Check email
   const account = await Account.findOne({ email: req.body.email });
+
   if (!account) return res.status(404).json({ message: 'Email not found.' });
-  // console.log(account) //delete later
+
   try {
     const resetToken = jwt.sign(
       { id: account.id },
@@ -126,7 +127,7 @@ exports.forget_password = async (req, res) => {
         `, // html body
       }
     );
-    // console.log(resetToken); //delete later
+
     return res.status(200).json({message: "Operation success. Email sent to the user."});
   } catch (error){
     next(error);

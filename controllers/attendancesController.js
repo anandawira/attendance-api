@@ -65,39 +65,102 @@ exports.get_attendances_of_all_users = [
     ).setZone('Asia/Jakarta');
 
     try {
-      // Retrieve attendances in period
+      // Get all business/active day in month period
+      const businessDay = moment(
+        '01-' + month + '-' + year,
+        'DD-MM-YYYY'
+      ).monthBusinessDays();
+
+      // Retrieve approved account and not admin
+      const account = await Account.find(
+        {
+          status: 'approved',
+          isAdmin: false,
+        },
+        {
+          first_name: 1,
+          last_name: 1,
+          email: 1,
+        }
+      );
+
+      // Creating object from cartesian with account and all business day
+      var accountAllDay = [];
+      account.map((account) => {
+        const { _id, first_name, last_name, email } = account;
+        businessDay.forEach((day) => {
+          let element = {};
+          element._id = _id;
+          element.first_name = first_name;
+          element.last_name = last_name;
+          element.email = email;
+          element.day = day.format('YYYY-MM-DD');
+          accountAllDay.push(element);
+        });
+      });
+
+      // Creating object from attendance and account
       const attendances = await Attendance.find(
         {
           in_time: { $gte: startDate, $lt: endDate },
-          out_time: { $exists: true },
-        },
-        '-_id -__v'
+        }
       )
         .lean({ virtuals: true })
-        .populate('account', 'first_name last_name email');
+        .populate('account');
 
-      // Creating result object
-      const results = attendances.map((attendance) => {
-        const { first_name, last_name, email } = attendance.account;
+      // Creating object attendances and account
+      const attendanceAccount = attendances.map((attendance) => {
+        const { _id } = attendance.account;
         const {
           in_time,
           in_location,
           out_time,
           out_location,
           work_duration_minutes,
+          reason,
+          description,
         } = attendance;
 
+        // Date format
+        const match_day = in_time.toISOString().slice(0, 10);
+
         return {
-          first_name,
-          last_name,
-          email,
+          _id,
           in_time,
           in_location,
           out_time,
           out_location,
           work_duration_minutes,
+          reason,
+          description,
+          match_day,
         };
       });
+
+      // Append result from accountAllDay and attended day
+      const results = accountAllDay.map((val) => {
+
+        // Matching id and day
+        let attendDay = attendanceAccount.find(element =>
+          element._id.toString() === val._id.toString() &&
+          element.match_day === val.day
+        );
+
+        // Check if undefined
+        let temp = (attendDay !== undefined) ? attendDay : [];
+        
+        // Append to object
+        val.in_time               = (temp.in_time || null);
+        val.in_location           = (temp.in_location || null);
+        val.out_time              = (temp.out_time|| null);
+        val.out_location          = (temp.out_location|| null);
+        val.work_duration_minutes = (temp.work_duration_minutes|| null);
+        val.reason                = (temp.reason || null);
+        val.description           = (temp.description || null);
+
+        return val;
+      });
+
 
       // Send response to user
       res.status(200).json({
@@ -177,25 +240,34 @@ exports.get_attendances_by_user_id = [
     ).setZone('Asia/Jakarta');
 
     try {
+      // Get all business/active day in month period
+      const businessDay = moment(
+        '01-' + month + '-' + year,
+        'DD-MM-YYYY'
+      ).monthBusinessDays();
+
       // Retrieve attendances by user id in period
       const attendances = await Attendance.find(
         {
           in_time: { $gte: startDate, $lt: endDate },
           account: req.account.id,
-          out_time: { $exists: true },
-        },
-        '-_id -__v -account'
+        }
       ).lean({ virtuals: true });
-
-      // Creating result object
-      const results = attendances.map((attendance) => {
+      
+      // Mapping attendances
+      const userAttendance = attendances.map((attendance) => {
         const {
           in_time,
           in_location,
           out_time,
           out_location,
           work_duration_minutes,
+          reason,
+          description,
         } = attendance;
+
+        // Date format
+        const match_day = in_time.toISOString().slice(0, 10);
 
         return {
           in_time,
@@ -203,12 +275,43 @@ exports.get_attendances_by_user_id = [
           out_time,
           out_location,
           work_duration_minutes,
+          reason,
+          description,
+          match_day,
         };
       });
 
+      // Creating result from mapped attendances and all business day
+      const result = businessDay.map((rawDay) => {
+        // Date format
+        const day = rawDay.format('YYYY-MM-DD');
+
+        // Create object
+        let val = {};
+
+        // Matching day
+        let attendDay = userAttendance.find(element => element.match_day === day);
+
+        // Check if undefined
+        let temp = (attendDay !== undefined) ? attendDay : [];
+
+        // Append to object
+        val.in_time               = (temp.in_time || null);
+        val.in_location           = (temp.in_location || null);
+        val.out_time              = (temp.out_time|| null);
+        val.out_location          = (temp.out_location|| null);
+        val.work_duration_minutes = (temp.work_duration_minutes|| null);
+        val.reason                = (temp.reason || null);
+        val.description           = (temp.description || null);
+        val.day                   = day;
+
+        return val;
+      });
+      
+      // Return response to user
       return res.status(200).json({
         message: 'Attendance of requested user retrieved successfully.',
-        results,
+        result,
       });
     } catch (err) {
       return next(err);
@@ -477,7 +580,7 @@ exports.get_all_absences = [
     ).setZone('Asia/Jakarta');
 
     try {
-      // Get all business/active day in selected month or this month
+      // Get all business/active day in month period
       const businessDay = moment(
         '01-' + month + '-' + year,
         'DD-MM-YYYY'
@@ -527,30 +630,32 @@ exports.get_all_absences = [
         const { _id, isAdmin, status } = attendance.account;
         const { work_duration_minutes} = attendance;
         const count = attendances.filter((obj) => obj.account._id === _id).length;
-        // Filter with approved account, non admin, sufficient work hours (8 hours), and less than 19 active days
-        if ( status == 'approved' &&
-             isAdmin==false &&
-             work_duration_minutes >= 480 &&
-             count <= 19)
-          {
-            return true;
-          }
-          return false;
-        })
-        // Mapping to object
-        .map((attendance) => {
-          const { _id, first_name, last_name, email } = attendance.account;
-          const { in_time } = attendance;
-          const day = in_time.toISOString().slice(0, 10);
-          const id = _id;
-          return {
-            id,
-            first_name,
-            last_name,
-            email,
-            day,
-          };
-        });
+        // Filter with approved account, non admin, 9 hours in work time, and not attending more than 3 days
+        if (
+          status == 'approved' &&
+          isAdmin==false &&
+          work_duration_minutes >= 540 &&
+          count <= (businessDay.length - 3 )
+          )
+        {
+          return true;
+        }
+        return false;
+      })
+      // Mapping to object
+      .map((attendance) => {
+        const { _id, first_name, last_name, email } = attendance.account;
+        const { in_time } = attendance;
+        const day = in_time.toISOString().slice(0, 10);
+        const id = _id;
+        return {
+          id,
+          first_name,
+          last_name,
+          email,
+          day,
+        };
+      });
 
       // Return not exist attendances
       const results = accountAllDay.filter(
