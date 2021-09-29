@@ -1,12 +1,12 @@
 const Attendance = require('../models/attendance');
 const Account = require('../models/account');
+const mongoose = require('mongoose');
 const { DateTime } = require('luxon');
 const { query, param, validationResult, body } = require('express-validator');
 const { getDistance } = require('geolib');
 const { getAsync, setexAsync, delAsync } = require('../configs/redis-client');
 const moment = require('moment-business-days');
 require('moment-timezone');
-
 
 // Get all attendance of all user in a monthly period. Admin only.
 exports.get_attendances_of_all_users = [
@@ -79,8 +79,13 @@ exports.get_attendances_of_all_users = [
       // Creating result object
       const results = attendances.map((attendance) => {
         const { first_name, last_name, email } = attendance.account;
-        const { in_time, in_location, out_time, out_location, work_duration_minutes } =
-          attendance;
+        const {
+          in_time,
+          in_location,
+          out_time,
+          out_location,
+          work_duration_minutes,
+        } = attendance;
 
         return {
           first_name,
@@ -184,8 +189,13 @@ exports.get_attendances_by_user_id = [
 
       // Creating result object
       const results = attendances.map((attendance) => {
-        const { in_time, in_location, out_time, out_location, work_duration_minutes } =
-          attendance;
+        const {
+          in_time,
+          in_location,
+          out_time,
+          out_location,
+          work_duration_minutes,
+        } = attendance;
 
         return {
           in_time,
@@ -462,26 +472,30 @@ exports.get_all_absences = [
     );
     const endDate = DateTime.fromObject(
       month !== 12
-      ? { year: year, month: month + 1 }
-      : { year: year + 1, month: 1 }
-      ).setZone('Asia/Jakarta');
-      
+        ? { year: year, month: month + 1 }
+        : { year: year + 1, month: 1 }
+    ).setZone('Asia/Jakarta');
+
     try {
       // Get all business/active day in selected month or this month
-      const businessDay = moment('01-' + month + '-' + year, 'DD-MM-YYYY').monthBusinessDays();
+      const businessDay = moment(
+        '01-' + month + '-' + year,
+        'DD-MM-YYYY'
+      ).monthBusinessDays();
 
       // Retrieve approved account and not admin
-      const account  = await Account.find({
-          status:'approved',
-          isAdmin:false,
+      const account = await Account.find(
+        {
+          status: 'approved',
+          isAdmin: false,
         },
         {
-          first_name:1,
-          last_name:1,
-          email:1,
+          first_name: 1,
+          last_name: 1,
+          email: 1,
         }
       );
-      
+
       // Creating object from cartesian with account and all business day
       var accountAllDay = [];
       account.map((account) => {
@@ -492,7 +506,7 @@ exports.get_all_absences = [
           element.first_name = first_name;
           element.last_name = last_name;
           element.email = email;
-          element.day = day.format("YYYY-MM-DD");
+          element.day = day.format('YYYY-MM-DD');
           accountAllDay.push(element);
         });
       });
@@ -502,8 +516,7 @@ exports.get_all_absences = [
         {
           in_time: { $gte: startDate, $lt: endDate },
           out_time: { $exists: true },
-        }
-        ,
+        },
         '-__v'
       )
         .lean({ virtuals: true })
@@ -522,25 +535,27 @@ exports.get_all_absences = [
           {
             return true;
           }
-        return false;
-      })
-      // Mapping to object
-      .map((attendance) => {
-        const { _id, first_name, last_name, email } = attendance.account;
-        const { in_time } = attendance;
-        const day = in_time.toISOString().slice(0, 10);
-        const id = _id;
-        return {
-          id,
-          first_name,
-          last_name,
-          email,
-          day,
-        };
-      });
-      
+          return false;
+        })
+        // Mapping to object
+        .map((attendance) => {
+          const { _id, first_name, last_name, email } = attendance.account;
+          const { in_time } = attendance;
+          const day = in_time.toISOString().slice(0, 10);
+          const id = _id;
+          return {
+            id,
+            first_name,
+            last_name,
+            email,
+            day,
+          };
+        });
+
       // Return not exist attendances
-      const results = accountAllDay.filter(val => !attendanceAccount.includes(val));
+      const results = accountAllDay.filter(
+        (val) => !attendanceAccount.includes(val)
+      );
 
       // Send response to user
       return res.status(200).json({
@@ -549,6 +564,127 @@ exports.get_all_absences = [
       });
     } catch (err) {
       // Pass error to error handler
+      return next(err);
+    }
+  },
+];
+
+exports.correct_incomplete_attendance = [
+  param('userId')
+    .isMongoId()
+    .withMessage(`'user id is invalid`)
+    .bail()
+    .custom(async (id) => {
+      const isAccountExist = await Account.exists({ _id: id });
+      if (!isAccountExist) {
+        throw new Error();
+      }
+    })
+    .withMessage('user id is not registered in the system'),
+  query('date').isDate().withMessage(`'date is invalid`),
+  body('reason')
+    .exists()
+    .withMessage(`Required field 'reason' not found in request body`)
+    .bail()
+    .isIn(['leave', 'sick', 'other'])
+    .withMessage("reason value should be 'leave', 'sick', or 'other'"),
+  body('description')
+    .exists()
+    .withMessage(`Required field 'description' not found in request body`),
+  async (req, res, next) => {
+    // Check validation result
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({
+        message:
+          'Request parameters did not pass the validation process.',
+        errors: errors.array(),
+      });
+    }
+
+    // Check if user is admin
+    if (!req.account.isAdmin) {
+      return res
+        .status(403)
+        .json({ message: `Current user don't have admin privilege.` });
+    }
+
+    // Extract date
+    let [year, month, day] = req.query.date.split(/\W/);
+    year = parseInt(year);
+    month = parseInt(month);
+    day = parseInt(day);
+
+    // Create date objects
+    const startDate = DateTime.fromObject({
+      year: year,
+      month: month,
+      day: day,
+    }).setZone('Asia/Jakarta');
+
+    const endDate = startDate.plus({ days: 1 });
+
+    const inTime = DateTime.fromObject({
+      year: year,
+      month: month,
+      day: day,
+      hour: 8,
+    }).setZone('Asia/Jakarta');
+
+    const outTime = DateTime.fromObject({
+      year: year,
+      month: month,
+      day: day,
+      hour: 17,
+    }).setZone('Asia/Jakarta');
+
+    try {
+      // Check if correction allowed
+      const attendances = await Attendance.find({
+        account: req.params.userId,
+        in_time: { $gte: startDate, $lt: endDate },
+      }).lean({ virtuals: true });
+
+      if (attendances.length !== 0) {
+        if (
+          attendances[0].out_time !== undefined &&
+          attendances[0].in_time !== undefined
+        ) {
+          return res
+            .status(405)
+            .json({ message: 'Cannot modify this attendance' });
+        }
+      }
+
+      // Correct the attendance
+      if (attendances.length === 0) {
+        const attendance = new Attendance({
+          account: mongoose.Types.ObjectId(req.params.userId),
+          in_time: inTime,
+          in_location: { lat: -6.175, long: 106.8286 },
+          out_time: outTime,
+          out_location: { lat: -6.175, long: 106.8286 },
+          reason: req.body.reason,
+          description: req.body.description,
+        });
+        await attendance.save();
+      } else {
+        await Attendance.findByIdAndUpdate(attendances[0].id, {
+          $set: {
+            in_time: inTime,
+            in_location: { lat: -6.175, long: 106.8286 },
+            out_time: outTime,
+            out_location: { lat: -6.175, long: 106.8286 },
+            reason: req.body.reason,
+            description: req.body.description,
+          },
+        });
+      }
+
+      return res
+        .status(200)
+        .json({ message: 'User attendance corrected successfully.' });
+    } catch (err) {
       return next(err);
     }
   },
