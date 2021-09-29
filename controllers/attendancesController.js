@@ -43,7 +43,7 @@ exports.get_attendances_of_all_users = [
 
     // Get year and month from query parameters with default current year and month
     const year = parseInt(req.query.year || now.year);
-    const month = parseInt(req.query.month || 8); // TODO: for dev mode only
+    const month = parseInt(req.query.month || now.month); // TODO: for dev mode only
 
     // Check cache
     const cachedResult = await getAsync(`Attendances:all:${year}:${month}`);
@@ -120,7 +120,10 @@ exports.get_attendances_of_all_users = [
           reason,
           description,
         } = attendance;
+
+        // Date format
         const match_day = in_time.toISOString().slice(0, 10);
+
         return {
           _id,
           in_time,
@@ -134,14 +137,19 @@ exports.get_attendances_of_all_users = [
         };
       });
 
-      // Return result
+      // Append result from accountAllDay and attended day
       const results = accountAllDay.map((val) => {
+
+        // Matching id and day
         let attendDay = attendanceAccount.find(element =>
           element._id.toString() === val._id.toString() &&
           element.match_day === val.day
         );
-        let temp = (attendDay !== undefined) ? attendDay : [];
 
+        // Check if undefined
+        let temp = (attendDay !== undefined) ? attendDay : [];
+        
+        // Append to object
         val.in_time               = (temp.in_time || null);
         val.in_location           = (temp.in_location || null);
         val.out_time              = (temp.out_time|| null);
@@ -257,7 +265,7 @@ exports.get_attendances_by_user_id = [
           reason,
           description,
         } = attendance;
-        
+
         // Date format
         const match_day = in_time.toISOString().slice(0, 10);
 
@@ -273,7 +281,7 @@ exports.get_attendances_by_user_id = [
         };
       });
 
-      // Creating object from mapped attendances and all business day
+      // Creating result from mapped attendances and all business day
       const result = businessDay.map((rawDay) => {
         // Date format
         const day = rawDay.format('YYYY-MM-DD');
@@ -281,7 +289,7 @@ exports.get_attendances_by_user_id = [
         // Create object
         let val = {};
 
-        // Match day
+        // Matching day
         let attendDay = userAttendance.find(element => element.match_day === day);
 
         // Check if undefined
@@ -300,7 +308,7 @@ exports.get_attendances_by_user_id = [
         return val;
       });
       
-      // Return success response
+      // Return response to user
       return res.status(200).json({
         message: 'Attendance of requested user retrieved successfully.',
         result,
