@@ -403,6 +403,9 @@ paths:
                     items:
                       type: object
                       properties:
+                        _id:
+                          type: string
+                          example: 6141bf2dc8e1c958c838bb12
                         first_name:
                           type: string
                           example: Fields
@@ -412,6 +415,10 @@ paths:
                         email:
                           type: string
                           example: farundel9@noaa.gov
+                        day:
+                          type: string
+                          format: date
+                          example: '2021-08-01'
                         in_time:
                           type: string
                           format: date-time
@@ -441,6 +448,11 @@ paths:
                         work_duration_minutes:
                           type: number
                           example: 512
+                        reason:
+                          type: string
+                          enum: [leave, sick, other]
+                        description:
+                          type: string
         '500':
           description: Internal server error
           content:
@@ -530,6 +542,15 @@ paths:
                         work_duration_minutes:
                           type: number
                           example: 512
+                        reason:
+                          type: string
+                          enum: [leave, sick, other]
+                        description:
+                          type: string
+                        day:
+                          type: string
+                          format: date
+                          example: '2021-08-01'
         '400':
           description: Bad Request. Request query parameters did not pass the validation process.
           headers:
