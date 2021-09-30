@@ -282,7 +282,7 @@ exports.get_attendances_by_user_id = [
       });
 
       // Creating result from mapped attendances and all business day
-      const result = businessDay.map((rawDay) => {
+      const results = businessDay.map((rawDay) => {
         // Date format
         const day = rawDay.format('YYYY-MM-DD');
 
@@ -311,7 +311,7 @@ exports.get_attendances_by_user_id = [
       // Return response to user
       return res.status(200).json({
         message: 'Attendance of requested user retrieved successfully.',
-        result,
+        results,
       });
     } catch (err) {
       return next(err);
