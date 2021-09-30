@@ -79,6 +79,12 @@ AttendanceSchema.statics.findByUserIdAndGetStatus = async function (userId) {
         canCheckOut: true,
         last_record: data,
       };
+    } else {
+      return {
+        canCheckIn: false,
+        canCheckOut: false,
+        last_record: data,
+      };
     }
   } catch (err) {
     throw new Error();
