@@ -758,7 +758,8 @@ exports.correct_incomplete_attendance = [
       if (attendances.length !== 0) {
         if (
           attendances[0].out_time !== undefined &&
-          attendances[0].in_time !== undefined
+          attendances[0].in_time !== undefined &&
+          attendances[0].reason === undefined
         ) {
           return res
             .status(405)
