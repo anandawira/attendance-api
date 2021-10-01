@@ -327,7 +327,7 @@ paths:
           description: Month for filtering attendances. Use number from 1 to 12. If omitted, system will use current month
       responses:
         '400':
-          description: Bad Request. Request query parameters did not pass validation.
+          description: Bad Request. Request query parameters did not pass validation or not applicable.
           headers:
             new_access_token:
               schema:
@@ -552,7 +552,7 @@ paths:
                           format: date
                           example: '2021-08-01'
         '400':
-          description: Bad Request. Request query parameters did not pass the validation process.
+          description: Bad Request. Request query parameters did not pass the validation process or not applicable.
           headers:
             new_access_token:
               schema:

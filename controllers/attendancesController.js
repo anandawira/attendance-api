@@ -58,11 +58,18 @@ exports.get_attendances_of_all_users = [
     const startDate = DateTime.fromObject({ year: year, month: month }).setZone(
       'Asia/Jakarta'
     );
+    
     const endDate = DateTime.fromObject(
       month !== 12
         ? { year: year, month: month + 1 }
         : { year: year + 1, month: 1 }
     ).setZone('Asia/Jakarta');
+    
+    // Filter future date
+    if (now < startDate) {
+      return res.status(400).json({
+        message: 'Bad request. Requested date not applicable.'});
+    }
 
     try {
       // Get all business/active day in month period
@@ -85,16 +92,21 @@ exports.get_attendances_of_all_users = [
       );
 
       // Creating object from cartesian with account and all business day
-      var accountAllDay = [];
+      let accountAllDay = [];
       account.map((account) => {
         const { _id, first_name, last_name, email } = account;
         businessDay.forEach((day) => {
+          // Filter future date
+          if (now < day) { return; }
+
           let element = {};
           element._id = _id;
           element.first_name = first_name;
           element.last_name = last_name;
           element.email = email;
           element.day = day.format('YYYY-MM-DD');
+          console.log(element.day);
+
           accountAllDay.push(element);
         });
       });
@@ -230,6 +242,9 @@ exports.get_attendances_by_user_id = [
     const month = parseInt(req.query.month || now.month);
 
     // Generating startDate and endDate for mongoDB querying
+    // const startDate = DateTime.fromObject({ year: year, month: month, day:'15' }).setZone(
+    //   'Asia/Jakarta'
+    // );
     const startDate = DateTime.fromObject({ year: year, month: month }).setZone(
       'Asia/Jakarta'
     );
@@ -238,6 +253,12 @@ exports.get_attendances_by_user_id = [
         ? { year: year, month: month + 1 }
         : { year: year + 1, month: 1 }
     ).setZone('Asia/Jakarta');
+    
+    // Filter future date
+    if (now < startDate) {
+      return res.status(400).json({
+        message: 'Bad request. Requested date not applicable.'});
+    }
 
     try {
       // Get all business/active day in month period
@@ -281,11 +302,17 @@ exports.get_attendances_by_user_id = [
         };
       });
 
-      // Creating result from mapped attendances and all business day
-      const results = businessDay.map((rawDay) => {
+      // Creating result from attendances and all business day
+      const results = businessDay.filter((rawDay) => {
+        // Filter future date
+        if (now < rawDay) {
+          return false;
+        }
+        return true;
+      }).map((rawDay)=>{       
         // Date format
         const day = rawDay.format('YYYY-MM-DD');
-
+        
         // Create object
         let val = {};
 
@@ -310,7 +337,7 @@ exports.get_attendances_by_user_id = [
       
       // Return response to user
       return res.status(200).json({
-        message: 'Attendance of requested user retrieved successfully.',
+        message: 'Attendance of requested user retrieved successfully!.',
         results,
       });
     } catch (err) {
