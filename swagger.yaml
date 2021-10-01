@@ -152,7 +152,7 @@ paths:
                   message:
                     type: string
         '400':
-          description: Password rejected. Must be at least 8 characters long.
+          description: Password rejected. Must be at least 8 characters long or should not be same with old password.
           content:
             application/json:
               schema:
