@@ -112,11 +112,9 @@ exports.get_attendances_of_all_users = [
       });
 
       // Creating object from attendance and account
-      const attendances = await Attendance.find(
-        {
-          in_time: { $gte: startDate, $lt: endDate },
-        }
-      )
+      const attendances = await Attendance.find({
+        in_time: { $gte: startDate, $lt: endDate },
+      })
         .lean({ virtuals: true })
         .populate('account');
 
@@ -151,28 +149,27 @@ exports.get_attendances_of_all_users = [
 
       // Append result from accountAllDay and attended day
       const results = accountAllDay.map((val) => {
-
         // Matching id and day
-        let attendDay = attendanceAccount.find(element =>
-          element._id.toString() === val._id.toString() &&
-          element.match_day === val.day
+        let attendDay = attendanceAccount.find(
+          (element) =>
+            element._id.toString() === val._id.toString() &&
+            element.match_day === val.day
         );
 
         // Check if undefined
-        let temp = (attendDay !== undefined) ? attendDay : [];
-        
+        let temp = attendDay !== undefined ? attendDay : [];
+
         // Append to object
-        val.in_time               = (temp.in_time || null);
-        val.in_location           = (temp.in_location || null);
-        val.out_time              = (temp.out_time|| null);
-        val.out_location          = (temp.out_location|| null);
-        val.work_duration_minutes = (temp.work_duration_minutes|| null);
-        val.reason                = (temp.reason || null);
-        val.description           = (temp.description || null);
+        val.in_time = temp.in_time || null;
+        val.in_location = temp.in_location || null;
+        val.out_time = temp.out_time || null;
+        val.out_location = temp.out_location || null;
+        val.work_duration_minutes = temp.work_duration_minutes || null;
+        val.reason = temp.reason || null;
+        val.description = temp.description || null;
 
         return val;
       });
-
 
       // Send response to user
       res.status(200).json({
@@ -268,13 +265,11 @@ exports.get_attendances_by_user_id = [
       ).monthBusinessDays();
 
       // Retrieve attendances by user id in period
-      const attendances = await Attendance.find(
-        {
-          in_time: { $gte: startDate, $lt: endDate },
-          account: req.account.id,
-        }
-      ).lean({ virtuals: true });
-      
+      const attendances = await Attendance.find({
+        in_time: { $gte: startDate, $lt: endDate },
+        account: req.account.id,
+      }).lean({ virtuals: true });
+
       // Mapping attendances
       const userAttendance = attendances.map((attendance) => {
         const {
@@ -317,24 +312,26 @@ exports.get_attendances_by_user_id = [
         let val = {};
 
         // Matching day
-        let attendDay = userAttendance.find(element => element.match_day === day);
+        let attendDay = userAttendance.find(
+          (element) => element.match_day === day
+        );
 
         // Check if undefined
-        let temp = (attendDay !== undefined) ? attendDay : [];
+        let temp = attendDay !== undefined ? attendDay : [];
 
         // Append to object
-        val.in_time               = (temp.in_time || null);
-        val.in_location           = (temp.in_location || null);
-        val.out_time              = (temp.out_time|| null);
-        val.out_location          = (temp.out_location|| null);
-        val.work_duration_minutes = (temp.work_duration_minutes|| null);
-        val.reason                = (temp.reason || null);
-        val.description           = (temp.description || null);
-        val.day                   = day;
+        val.in_time = temp.in_time || null;
+        val.in_location = temp.in_location || null;
+        val.out_time = temp.out_time || null;
+        val.out_location = temp.out_location || null;
+        val.work_duration_minutes = temp.work_duration_minutes || null;
+        val.reason = temp.reason || null;
+        val.description = temp.description || null;
+        val.day = day;
 
         return val;
       });
-      
+
       // Return response to user
       return res.status(200).json({
         message: 'Attendance of requested user retrieved successfully!.',
@@ -462,9 +459,16 @@ exports.check_in_attendance_by_user_id = [
 
       await attendanceObject.save();
 
-      return res.status(200).json({
+      res.status(200).json({
         message: `Check in success. Time and location saved in the database.`,
       });
+
+      // Remove cache for the month
+      const now = DateTime.now().setZone('Asia/Jakarta');
+      const { year, month } = now;
+      await delAsync(`Attendances:all:${year}:${month}`);
+
+      return;
     } catch (err) {
       return next(err);
     }
@@ -653,36 +657,38 @@ exports.get_all_absences = [
         .populate('account', 'first_name last_name email isAdmin status');
 
       // Creating object from attendance and account
-      const attendanceAccount = attendances.filter((attendance) =>{
-        const { _id, isAdmin, status } = attendance.account;
-        const { work_duration_minutes} = attendance;
-        const count = attendances.filter((obj) => obj.account._id === _id).length;
-        // Filter with approved account, non admin, 9 hours in work time, and not attending more than 3 days
-        if (
-          status == 'approved' &&
-          isAdmin==false &&
-          work_duration_minutes >= 540 &&
-          count <= (businessDay.length - 3 )
-          )
-        {
-          return true;
-        }
-        return false;
-      })
-      // Mapping to object
-      .map((attendance) => {
-        const { _id, first_name, last_name, email } = attendance.account;
-        const { in_time } = attendance;
-        const day = in_time.toISOString().slice(0, 10);
-        const id = _id;
-        return {
-          id,
-          first_name,
-          last_name,
-          email,
-          day,
-        };
-      });
+      const attendanceAccount = attendances
+        .filter((attendance) => {
+          const { _id, isAdmin, status } = attendance.account;
+          const { work_duration_minutes } = attendance;
+          const count = attendances.filter(
+            (obj) => obj.account._id === _id
+          ).length;
+          // Filter with approved account, non admin, 9 hours in work time, and not attending more than 3 days
+          if (
+            status == 'approved' &&
+            isAdmin == false &&
+            work_duration_minutes >= 540 &&
+            count <= businessDay.length - 3
+          ) {
+            return true;
+          }
+          return false;
+        })
+        // Mapping to object
+        .map((attendance) => {
+          const { _id, first_name, last_name, email } = attendance.account;
+          const { in_time } = attendance;
+          const day = in_time.toISOString().slice(0, 10);
+          const id = _id;
+          return {
+            id,
+            first_name,
+            last_name,
+            email,
+            day,
+          };
+        });
 
       // Return not exist attendances
       const results = accountAllDay.filter(
@@ -728,8 +734,7 @@ exports.correct_incomplete_attendance = [
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       return res.status(400).json({
-        message:
-          'Request parameters did not pass the validation process.',
+        message: 'Request parameters did not pass the validation process.',
         errors: errors.array(),
       });
     }
@@ -780,13 +785,19 @@ exports.correct_incomplete_attendance = [
       if (attendances.length !== 0) {
         if (
           attendances[0].out_time !== undefined &&
-          attendances[0].in_time !== undefined
+          attendances[0].in_time !== undefined &&
+          attendances[0].reason === undefined
         ) {
           return res
             .status(405)
             .json({ message: 'Cannot modify this attendance' });
         }
       }
+
+      // Remove cache for the month
+      const now = DateTime.now().setZone('Asia/Jakarta');
+      const { year, month } = now;
+      await delAsync(`Attendances:all:${year}:${month}`);
 
       // Correct the attendance
       if (attendances.length === 0) {
