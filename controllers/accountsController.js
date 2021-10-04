@@ -89,7 +89,7 @@ exports.register_new_account = [
 ];
 
 // Forget Password
-exports.forget_password = async (req, res) => {
+exports.forget_password = async (req, res, next) => {
   // Check email
   const account = await Account.findOne({ email: req.body.email });
 
@@ -127,7 +127,7 @@ exports.forget_password = async (req, res) => {
         `, // html body
       }
     );
-
+      console.log(resetToken);
     return res.status(200).json({message: "Operation success. Email sent to the user."});
   } catch (error){
     next(error);
@@ -167,9 +167,24 @@ exports.reset_password = [
         }
       );
 
+      // Get account from database
+      const account = await Account.findById(req.account.id);
+
+      // Compare user's plain password to the password hash in database
+      const isPasswordMatch = await bcrypt.compare(
+        req.body.password,
+        account.password
+      );
+
       // Hashing password
       const hashedPassword = await bcrypt.hash(req.body.password, 10);
 
+      // Check comparison result
+      if (isPasswordMatch) {
+        // If password match in database, send response to client
+        return res.status(400).json({ message: `Can't reset password with old password.` });
+      }
+      
       // Update password
       Account.findByIdAndChangePassword(req.account.id, hashedPassword);
 
