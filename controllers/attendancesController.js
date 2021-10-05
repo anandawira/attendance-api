@@ -105,7 +105,6 @@ exports.get_attendances_of_all_users = [
           element.last_name = last_name;
           element.email = email;
           element.day = day.format('YYYY-MM-DD');
-          console.log(element.day);
 
           accountAllDay.push(element);
         });
