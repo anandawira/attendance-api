@@ -1232,7 +1232,7 @@ paths:
                     type: string
                     enum: [pending, approved, rejected]
         '400':
-          description: Bad Request Body. Invalid approval status.
+          description: Bad Request Body. Request body did not pass validation.
           content:
             application/json:
               schema:
@@ -1242,7 +1242,7 @@ paths:
                     type: array
                     items:
                       type: string
-                      example: Invalid approval status.
+                      example: Request body did not pass the validation process.
         '401':
           description: Authentication error
           content:
@@ -1351,7 +1351,7 @@ paths:
                 properties:
                   message:
                     type: string
-  /admin/absences:
+  /admin/absences:  asas
     get:
       tags:
       - Admin
@@ -1402,6 +1402,38 @@ paths:
                         day:
                           type: string
                           format: date
+        '400':
+          description: Bad Request. Request query parameters did not pass validation or not applicable.
+          headers:
+            new_access_token:
+              schema:
+                type: string
+              description: Only available after refreshing token. Use this token for next api calls.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Request query parameters did not pass the validation process.
+                  errors:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        value:
+                          type: string
+                          example: "82"
+                        msg:
+                          type: string
+                          example: query parameter 'month' is invalid. please only use number 1 to 12.
+                        param:
+                          type: string
+                          example: month
+                        location:
+                          type: string
+                          example: query
         '401':
           description: Authentication error.
           content:
