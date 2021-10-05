@@ -1189,7 +1189,7 @@ paths:
       tags:
       - Admin
       summary: Update account approval
-      description: Update only to [pending, approved, rejected]
+      description: Update only to 'approved' or 'rejected'
       security:
         - access_token: []
       parameters:
@@ -1212,7 +1212,7 @@ paths:
               properties:
                 status:
                   type: string
-                  enum: [pending, approved, rejected]
+                  enum: [approved, rejected]
                 message:
                   type: string
               required:

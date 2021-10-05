@@ -610,6 +610,12 @@ exports.get_all_absences = [
         : { year: year + 1, month: 1 }
     ).setZone('Asia/Jakarta');
 
+    // Filter future date
+    if (now < startDate) {
+      return res.status(400).json({
+        message: 'Bad request. Requested date not applicable.'});
+    }
+
     try {
       // Get all business/active day in month period
       const businessDay = moment(
@@ -635,6 +641,9 @@ exports.get_all_absences = [
       account.map((account) => {
         const { _id, first_name, last_name, email } = account;
         businessDay.forEach((day) => {
+          // Filter future date
+          if (now < day) { return; }
+          
           let element = {};
           element.id = _id;
           element.first_name = first_name;
