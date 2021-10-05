@@ -678,7 +678,7 @@ exports.get_all_absences = [
             status == 'approved' &&
             isAdmin == false &&
             work_duration_minutes >= 540 &&
-            count <= businessDay.length - 3
+            count <= (businessDay.length - 3)
           ) {
             return true;
           }
