@@ -1230,19 +1230,39 @@ paths:
                     example: Account approval updated successfully.
                   status:
                     type: string
-                    enum: [pending, approved, rejected]
+                    enum: [approved, rejected]
         '400':
           description: Bad Request Body. Request body did not pass validation.
+          headers:
+            new_access_token:
+              schema:
+                type: string
+              description: Only available after refreshing token. Use this token for next api calls.
           content:
             application/json:
               schema:
                 type: object
                 properties:
                   message:
+                    type: string
+                    example: Request body did not pass the validation process.
+                  errors:
                     type: array
                     items:
-                      type: string
-                      example: Request body did not pass the validation process.
+                      type: object
+                      properties:
+                        value:
+                          type: string
+                          example: pending
+                        msg:
+                          type: string
+                          example: status value should be approved or rejected.
+                        param:
+                          type: string
+                          example: status
+                        location:
+                          type: string
+                          example: body
         '401':
           description: Authentication error
           content:
