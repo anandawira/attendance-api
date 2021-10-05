@@ -1351,7 +1351,7 @@ paths:
                 properties:
                   message:
                     type: string
-  /admin/absences:  asas
+  /admin/absences:
     get:
       tags:
       - Admin
