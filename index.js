@@ -36,7 +36,7 @@ app.use(
 app.use(express.urlencoded({ extended: false }));
 app.use(compression());
 app.use(helmet());
-app.use(cors());
+app.use(cors({exposedHeaders: 'New_access_token'}));
 
 // Routes
 app.use('/v1/accounts', accountsRouter);
