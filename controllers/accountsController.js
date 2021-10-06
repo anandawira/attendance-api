@@ -127,7 +127,6 @@ exports.forget_password = async (req, res, next) => {
         `, // html body
       }
     );
-      console.log(resetToken);
     return res.status(200).json({message: "Operation success. Email sent to the user."});
   } catch (error){
     next(error);
