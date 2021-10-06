@@ -80,11 +80,11 @@ module.exports = [
       }
 
       // Destructuring properties from account object
-      const { _id, isAdmin } = account;
+      const { isAdmin } = account;
 
       // Generate a new access token
       const accessToken = await jwt.sign(
-        { id: _id, isAdmin: isAdmin },
+        { id, isAdmin },
         process.env.ACCESS_TOKEN_SECRET,
         { expiresIn: '1d' }
       );
@@ -93,7 +93,7 @@ module.exports = [
       res.append('new_access_token', accessToken);
 
       // Append account data to request object
-      req.account = { id: _id, isAdmin };
+      req.account = { id, isAdmin };
 
       // Continue to next middleware
       return next();
