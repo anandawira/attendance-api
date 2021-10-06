@@ -46,8 +46,11 @@ exports.list_approval_account = async (req, res, next) => {
 exports.update_approval = [
   // Validating status value
   body('status')
-    .isIn(['pending','approved','rejected'])
-    .withMessage("Invalid approval status."),
+    .exists()
+    .withMessage(`'status' is not found in the request body`)
+    .bail()
+    .isIn(['approved','rejected'])
+    .withMessage(`'status' value should be 'approved' or 'rejected'.`),
   body('message')
     .optional(),
   async (req, res, next) => {
@@ -60,7 +63,9 @@ exports.update_approval = [
     const errors = validationResult(req);
     // Return bad request if status not match
     if (!errors.isEmpty()) {
-      return res.status(400).json({ message: 'Invalid approval status.' });
+      return res.status(400).json({ message: 'Request body did not pass the validation process.',
+      errors: errors.array(),
+      });
     }
     try {
       // Check if account id is valid

@@ -105,7 +105,6 @@ exports.get_attendances_of_all_users = [
           element.last_name = last_name;
           element.email = email;
           element.day = day.format('YYYY-MM-DD');
-          console.log(element.day);
 
           accountAllDay.push(element);
         });
@@ -610,6 +609,12 @@ exports.get_all_absences = [
         : { year: year + 1, month: 1 }
     ).setZone('Asia/Jakarta');
 
+    // Filter future date
+    if (now < startDate) {
+      return res.status(400).json({
+        message: 'Bad request. Requested date not applicable.'});
+    }
+
     try {
       // Get all business/active day in month period
       const businessDay = moment(
@@ -635,6 +640,9 @@ exports.get_all_absences = [
       account.map((account) => {
         const { _id, first_name, last_name, email } = account;
         businessDay.forEach((day) => {
+          // Filter future date
+          if (now < day) { return; }
+          
           let element = {};
           element.id = _id;
           element.first_name = first_name;
@@ -649,7 +657,6 @@ exports.get_all_absences = [
       const attendances = await Attendance.find(
         {
           in_time: { $gte: startDate, $lt: endDate },
-          out_time: { $exists: true },
         },
         '-__v'
       )
@@ -660,16 +667,14 @@ exports.get_all_absences = [
       const attendanceAccount = attendances
         .filter((attendance) => {
           const { _id, isAdmin, status } = attendance.account;
-          const { work_duration_minutes } = attendance;
           const count = attendances.filter(
             (obj) => obj.account._id === _id
           ).length;
-          // Filter with approved account, non admin, 9 hours in work time, and not attending more than 3 days
+          // Filter with approved account, non admin, and not attending more than 3 days
           if (
             status == 'approved' &&
             isAdmin == false &&
-            work_duration_minutes >= 540 &&
-            count <= businessDay.length - 3
+            count <= (businessDay.length - 3)
           ) {
             return true;
           }
