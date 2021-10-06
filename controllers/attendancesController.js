@@ -649,19 +649,17 @@ exports.get_all_absences = [
           element.last_name = last_name;
           element.email = email;
           element.day = day.format('YYYY-MM-DD');
+
           accountAllDay.push(element);
         });
       });
 
       // Creating object from attendance and account
-      const attendances = await Attendance.find(
-        {
-          in_time: { $gte: startDate, $lt: endDate },
-        },
-        '-__v'
-      )
+      const attendances = await Attendance.find({
+        in_time: { $gte: startDate, $lt: endDate },
+      })
         .lean({ virtuals: true })
-        .populate('account', 'first_name last_name email isAdmin status');
+        .populate('account');
 
       // Creating object from attendance and account
       const attendanceAccount = attendances
@@ -694,11 +692,20 @@ exports.get_all_absences = [
             day,
           };
         });
-
-      // Return not exist attendances
-      const results = accountAllDay.filter(
-        (val) => !attendanceAccount.includes(val)
-      );
+      
+      // Append result from accountAllDay and attended day
+      const results = accountAllDay.filter((val) => {
+        // Matching id and day
+        let attendDay = attendanceAccount.find(
+          (element) =>
+            element.id.toString() === val.id.toString() &&
+            element.day === val.day
+        );
+        if (attendDay === undefined) {
+          return true;
+        }
+        return false;
+      });
 
       // Send response to user
       return res.status(200).json({
