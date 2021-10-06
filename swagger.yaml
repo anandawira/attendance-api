@@ -329,7 +329,7 @@ paths:
         '400':
           description: Bad Request. Request query parameters did not pass validation or not applicable.
           headers:
-            new_access_token:
+            New_access_token:
               schema:
                 type: string
               description: Only available after refreshing token. Use this token for next api calls.
@@ -371,7 +371,7 @@ paths:
         '403':
           description: Forbidden. Current user don't have admin privilege.
           headers:
-            new_access_token:
+            New_access_token:
               schema:
                 type: string
               description: Only available after refreshing token. Use this token for next api calls.
@@ -386,7 +386,7 @@ paths:
         '200':
           description: OK. Attendances of all users retrieved successfully.
           headers:
-            new_access_token:
+            New_access_token:
               schema:
                 type: string
               description: Only available after refreshing token. Use this token for next api calls.
@@ -496,7 +496,7 @@ paths:
         '200':
           description: OK. Attendance of requested user retrieved successfully.
           headers:
-            new_access_token:
+            New_access_token:
               schema:
                 type: string
               description: Only available after refreshing token. Use this token for next api calls.
@@ -554,7 +554,7 @@ paths:
         '400':
           description: Bad Request. Request query parameters did not pass the validation process or not applicable.
           headers:
-            new_access_token:
+            New_access_token:
               schema:
                 type: string
               description: Only available after refreshing token. Use this token for next api calls.
@@ -596,7 +596,7 @@ paths:
         '403':
           description: Forbidden. Current account does not have access to the requested user id.
           headers:
-            new_access_token:
+            New_access_token:
               schema:
                 type: string
               description: Only available after refreshing token. Use this token for next api calls.
@@ -668,7 +668,7 @@ paths:
         '400':
           description: Bad Request. Request parameters did not pass the validation process.
           headers:
-            new_access_token:
+            New_access_token:
               schema:
                 type: string
               description: Only available after refreshing token. Use this token for next api calls.
@@ -760,7 +760,7 @@ paths:
         '400':
           description: Bad Request. Request query parameters did not pass the validation process.
           headers:
-            new_access_token:
+            New_access_token:
               schema:
                 type: string
               description: Only available after refreshing token. Use this token for next api calls.
@@ -802,7 +802,7 @@ paths:
         '403':
           description: Forbidden. Current account does not have access to the requested user id.
           headers:
-            new_access_token:
+            New_access_token:
               schema:
                 type: string
               description: Only available after refreshing token. Use this token for next api calls.
@@ -817,7 +817,7 @@ paths:
         '200':
           description: OK. User attendance status retrieved successfully.
           headers:
-            new_access_token:
+            New_access_token:
               schema:
                 type: string
               description: Only available after refreshing token. Use this token for next api calls.
@@ -917,7 +917,7 @@ paths:
         '400':
           description: Bad Request. Request body fields did not pass the validation process.
           headers:
-            new_access_token:
+            New_access_token:
               schema:
                 type: string
               description: Only available after refreshing token. Use this token for next api calls.
@@ -959,7 +959,7 @@ paths:
         '403':
           description: Forbidden. Cannot check in with this user
           headers:
-            new_access_token:
+            New_access_token:
               schema:
                 type: string
               description: Only available after refreshing token. Use this token for next api calls.
@@ -974,7 +974,7 @@ paths:
         '200':
           description: OK. Check in success. Time and location saved in the database.
           headers:
-            new_access_token:
+            New_access_token:
               schema:
                 type: string
               description: Only available after refreshing token. Use this token for next api calls.
@@ -1033,7 +1033,7 @@ paths:
         '400':
           description: Bad Request. Request body fields did not pass the validation process.
           headers:
-            new_access_token:
+            New_access_token:
               schema:
                 type: string
               description: Only available after refreshing token. Use this token for next api calls.
@@ -1075,7 +1075,7 @@ paths:
         '403':
           description: Forbidden. Cannot check out with this user
           headers:
-            new_access_token:
+            New_access_token:
               schema:
                 type: string
               description: Only available after refreshing token. Use this token for next api calls.
@@ -1090,7 +1090,7 @@ paths:
         '200':
           description: OK. Check in success. Time and location saved in the database.
           headers:
-            new_access_token:
+            New_access_token:
               schema:
                 type: string
               description: Only available after refreshing token. Use this token for next api calls.
@@ -1467,7 +1467,7 @@ paths:
         '403':
           description: Forbidden. Current user don't have admin privilege.
           headers:
-            new_access_token:
+            New_access_token:
               schema:
                 type: string
               description: Only available after refreshing token. Use this token for next api calls.
