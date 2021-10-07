@@ -71,7 +71,7 @@ exports.register_new_account = [
           <p>Name: ${req.body.first_name} ${req.body.last_name}</p>
           <p>Email: ${req.body.email}</p>
           <p>Please check your dashboard page and make sure to approve the right employee's email.</p>
-          <p><a href="https://glints1-attendance.web.app/admin/approval">Click here to check it now.</a></p>
+          <p><a href="https://attendance-1.vercel.app/#/admin/approval">Click here to check it now.</a></p>
           <p></p>
           <p>Attendance App - Glints IPE 1</p>
           `,
